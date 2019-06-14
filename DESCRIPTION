@@ -1,6 +1,6 @@
 Encoding: UTF-8
 Package: replicateBE
-Version: 1.0.7
+Version: 1.0.8
 Date: 2019-06-14
 Title: Average Bioequivalence with Expanding Limits (ABEL)
 Authors@R: c(person("Helmut", "Schütz",
@@ -32,10 +32,10 @@ VignetteBuilder: knitr
 URL: https://github.com/Helmut01/replicateBE
 BugReports: https://github.com/Helmut01/replicateBE/issues
 NeedsCompilation: no
-Packaged: 2019-06-14 12:31:48 UTC; HS
+Packaged: 2019-06-14 13:36:17 UTC; HS
 Author: Helmut Schütz [aut, cre] (<https://orcid.org/0000-0002-1167-7880>),
   Michael Tomashevskiy [ctb],
   Detlew Labes [ctb]
 Maintainer: Helmut Schütz <helmut.schuetz@bebac.at>
 Repository: CRAN
-Date/Publication: 2019-06-14 13:20:03 UTC
+Date/Publication: 2019-06-14 13:50:03 UTC
