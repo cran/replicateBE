@@ -17,9 +17,12 @@ method.B <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
                   dec=dec, logtrans=logtrans, ola=ola,
                   print=print, verbose=verbose, ask=ask,
                   plot.bxp=plot.bxp, fence=fence, data=data)
+  logtrans <- ret$logtrans
   # Add description of the degrees of freedom to the result file
-  results  <- paste0(ret$res.file, "_MethodB",
-                     ifelse(option == 2, "_DF_GL", "_DF_Satt"), ".txt")
+  if (option == 1) DF.suff <- "Satt"
+  if (option == 2) DF.suff <- "GL"
+  if (option == 3) DF.suff <- "KR"
+  results  <- paste0(ret$res.file, "_MethodB_DF_", DF.suff, ".txt")
   # generate variables based on the attribute
   # 2nd condition: Otherwise, the header from a CSV file will be overwritten
   if (!is.null(data) & missing(ext)) {
@@ -30,7 +33,6 @@ method.B <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
     descr <- info$descr
     ext   <- ""
   }
-  logtrans <- ret$transf
   os <- Sys.info()[[1]]   # get OS for line-endings in output (Win: CRLF)
   ow <- options("digits") # save options
   options(digits=12)      # increase digits for anova()
@@ -62,7 +64,7 @@ method.B <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
       print(signif(EMA.B$tTable["treatmentT", ], 7))
       cat("\n")
     }
-  } else {              # by lmer/lmerTest (Satterthwaite's DF)
+  } else {              # by lmer/lmerTest (Satterthwaite's or Kenward-Roger DF)
     if (logtrans) {     # use the raw data and log-transform internally
       modB <- lmer(log(PK) ~ sequence + period + treatment + (1|subject),
                              data=ret$data)
@@ -70,34 +72,46 @@ method.B <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
       modB <- lmer(logPK ~ sequence + period + treatment + (1|subject),
                            data=ret$data)
     }
-    EMA.B <- summary(modB) # Satterthwaite's DF by default
+    if (option == 1) {
+      EMA.B <- summary(modB, ddf="Satterthwaite")
+    } else {
+      EMA.B <- summary(modB, ddf="Kenward-Roger")
+    }
     PE    <- EMA.B$coefficients["treatmentT", "Estimate"]
     CI    <- exp(PE + c(-1, +1) *
                  qt(1-alpha, EMA.B$coef["treatmentT", "df"]) *
                  EMA.B$coef["treatmentT", "Std. Error"])
     DF    <- EMA.B$coefficients["treatmentT", "df"]
     if (verbose) {
-      cat("\nData set", paste0(file, set,
-          ": Method B by lmer (option=1; ",
-          "equivalent to SAS\u2019 DDFM=SATTERTHWAITE)"),
-          paste0("\n", paste0(rep("\u2500", 81), collapse="")), "\n")
-      print(anova(modB))
+      if (option == 1) {
+         cat("\nData set", paste0(file, set,
+             ": Method B by lmer (option=1; equivalent to SAS\u2019 DDFM=SATTERTHWAITE)"),
+            paste0("\n", paste0(rep("\u2500", 81), collapse="")), "\n")
+        print(anova(modB, ddf="Satterthwaite"))
+      } else {
+        df.txt <- "3; equivalent to SAS\u2019 DDFM=KENWARDROGER)"
+        cat("\nData set", paste0(file, set,
+            ": Method B by lmer (option=3; equivalent to SAS\u2019 DDFM=KENWARDROGER)"),
+            paste0("\n", paste0(rep("\u2500", 80), collapse="")), "\n")
+        print(anova(modB, ddf="Kenward-Roger"))
+     }
       cat("\ntreatment T \u2013 R:\n")
       print(signif(EMA.B$coefficients["treatmentT", ], 7))
       cat("\n")
     }
-  } # end of evaluation by option=2 (lme) or option=1 (lmer)
+  } # end of evaluation by option=2 (lme) or option=1/3 (lmer)
   PE  <- exp(PE)
   res <- data.frame(ret$type, paste0("B-", option), ret$n, ret$nTT, ret$nRR,
                     paste0(ret$Sub.Seq, collapse="|"),
                     paste0(ret$Miss.seq, collapse="|"),
                     paste0(ret$Miss.per, collapse="|"), alpha,
-                    sprintf("%8.3f", DF), ret$CVwT, ret$CVwR, ret$sw.ratio,
+                    DF, ret$CVwT, ret$CVwR, ret$sw.ratio,
                     ret$sw.ratio.upper, ret$BE1, ret$BE2, CI[1], CI[2],
                     PE, "fail", "fail", "fail", log(CI[2])-log(PE),
                     paste0(ret$ol, collapse="|"), ret$CVwR.new,
                     ret$sw.ratio.new, ret$sw.ratio.new.upper, ret$BE.new1,
-                    ret$BE.new2, "fail", "fail", "fail")
+                    ret$BE.new2, "fail", "fail", "fail",
+                    stringsAsFactors=FALSE)
   names(res)<- c("Design", "Method", "n", "nTT", "nRR", "Sub/seq",
                  "Miss/seq", "Miss/per", "alpha", "DF", "CVwT(%)",
                  "CVwR(%)", "sw.ratio", "sw.ratio.CL", "EL.lo(%)",
@@ -152,7 +166,6 @@ method.B <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
     if (res$CI.new == "pass" & res$GMR.new == "pass")
       res$BE.new <- "pass"  # if passing both, conclude BE
   }
-  options(ow) # restore options
   if (details) { # results in default (7 digits) precision
     ret <- res
     if (as.character(res$outlier) == "NA") {
@@ -211,11 +224,9 @@ method.B <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
   left.str   <- substr(ret$txt, 1, cut.pos-1)
   right.str  <- substr(ret$txt, cut.pos, nchar(ret$txt))
   insert.str <- "Degrees of freedom : "
-  if (option == 1) {
-    insert.str <- paste0(insert.str, sprintf("%7.3f (Satterthwaite)", DF))
-  } else {
-    insert.str <- paste0(insert.str, sprintf("%3i", DF))
-  }
+  if (option == 1) insert.str <- paste0(insert.str, sprintf("%7.3f (Satterthwaite)", DF))
+  if (option == 2) insert.str <- paste0(insert.str, sprintf("%3i", DF))
+  if (option == 3) insert.str <- paste0(insert.str, sprintf("%7.3f (Kenward-Roger)", DF))
   insert.str <- paste0(insert.str, "\nalpha              :   ", alpha,
                 " (", 100*(1-2*alpha), "% CI)\n")
   txt <- paste0(left.str, insert.str, right.str)

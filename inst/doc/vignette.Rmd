@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-suppressMessages(library(replicateBE))
+library(replicateBE)
 ```
 
 * [Disclaimer](#disclaimer)
@@ -165,7 +165,7 @@ If a subject drops out from the study in a higher period, data with at least one
 
 
 ##### Example of different data sets{#setexpl}
-Study started with 16 subjects. In sequence `RTRT` one dropout in the 2^nd^ period and one in the 4^th^ period. In sequence `TRTR` one dropout in the 3^rd^ period and one in the 4^th^.\
+16 subjects enrolled in the study. In sequence `RTRT` one dropout in the 2^nd^ period and one in the 4^th^ period. In sequence `TRTR` one dropout in the 3^rd^ period and one in the 4^th^.\
 
 `1  RTR.    5  RTRT    9  TRTR   13  RTRT`\
 `2  RTRT    6  TR..   10  TRTR   14  TRT.`\
@@ -262,7 +262,7 @@ print(df, row.names = FALSE)
 
 
 #### Degrees of freedom, comparison of methods{#df_comp}
-The SAS code provided by the EMA in the Q&A document does not specify how the degrees of freedom should be calculated in ‘Method B’. Hence, the default in `PROC MIXED`, namely `DDFM=CONTAIN` is applied, _i.e._, `method.B(..., option = 2`). For incomplete data (missing periods) Satterthwaite’s approximation of the degrees of freedom, _i.e._, `method.B(..., option = 1)` might be a better choice – if stated as such in the SAP.
+The SAS code provided by the EMA in the Q&A document does not specify how the degrees of freedom should be calculated in ‘Method B’. Hence, the default in `PROC MIXED`, namely `DDFM=CONTAIN` is applied, _i.e._, `method.B(..., option = 2`). For incomplete data (missing periods) Satterthwaite’s approximation of the degrees of freedom, _i.e._, `method.B(..., option = 1)` or Kenward-Roger `method.B(..., option = 3)` might be a better choice – if stated as such in the SAP.
 
 The EMA seemingly prefers ‘Method A’:
 
@@ -299,17 +299,20 @@ Exploring data set 14:
 A  <- method.A(print = FALSE, details = TRUE, data = rds14)
 B2 <- method.B(print = FALSE, details = TRUE, data = rds14, option = 2)
 B1 <- method.B(print = FALSE, details = TRUE, data = rds14, option = 1)
+B3 <- method.B(print = FALSE, details = TRUE, data = rds14, option = 3)
 # Rounding of CI according to the GL
 A[15:19]  <- round(A[15:19],  2) # all effects fixed
 B1[15:19] <- round(B1[15:19], 2) # Satterthwaite's df
 B2[15:19] <- round(B2[15:19], 2) # df acc. to Q&A
-df <- rbind(A[c(2, 15:23)], B1[c(2, 15:23)], B2[c(2, 15:23)])
-names(df)[c(1, 10)] <- c("Meth.", "hw")
-df$hw <- signif(df$hw, 5)
+B3[15:19] <- round(B3[15:19], 2) # Kenward-Roger df
+cs <- c(2, 10, 15:23)
+df <- rbind(A[cs], B1[cs], B2[cs], B3[cs])
+names(df)[c(1, 11)] <- c("Meth.", "hw")
+df[, c(2, 11)] <- signif(df[, c(2, 11)], 5)
 print(df[order(df$BE, df$hw, decreasing = c(FALSE, TRUE)), ],
       row.names = FALSE)
 ```
-Both variants of ‘Method B’ are more conservative than ‘Method A’. Before rounding the confidence interval, `option = 2` with 192 degrees of freedom would be more conservative (lower CL 69.21029) than `option = 1` with 197.44 degrees of freedom (lower CL 69.21286). However, given the incompleteness of this data set (four missings in period 2, twelve in period 3, and 19 in period 4), Satterthwaite’s degrees of freedom probably are the better choice.
+All variants of ‘Method B’ are more conservative than ‘Method A’. Before rounding the confidence interval, `option = 2` with 192 degrees of freedom would be more conservative (lower CL 69.21029) than `option = 1` with 197.44 degrees of freedom (lower CL 69.21286). However, given the incompleteness of this data set (four missings in period 2, twelve in period 3, and 19 in period 4), Satterthwaite’s or Kenward-Roger degrees of freedom probably are the better choice.
 
 
 #### Outlier analysis{#ola}

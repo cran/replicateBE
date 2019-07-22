@@ -97,21 +97,18 @@ In software sequences and treatments are ranked in lexical order. Hence, executi
 \source{
   \tabular{cll}{
     Dataset \tab Origin \tab Description\cr
-    \code{rds05} \tab \ifelse{html}{\out{Shumaker&nbsp;&amp;&nbsp;Metzler}}{Shumaker~&~Metzler} \tab \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}} data given in the Appendix.\cr
+    \code{rds05} \tab Shumaker & Metzler \tab \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}} data given in the Appendix.\cr
     \code{rds11} \tab Hauschke \emph{et al.} \tab \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}} data given in Table 9.6.\cr
     \code{rds16} \tab FDA, CDER \tab \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}} data of Drug 14a.
   }
 }
 
 \references{
-Shumaker RC, Metzler CM. \emph{The Phenytoin Trial is a Case Study of \sQuote{Individual} Bioequivalence.}\cr
-Drug Inf J. 1998;32(4):1063--72. \doi{10.1177/009286159803200426}
+Shumaker RC, Metzler CM. \emph{The Phenytoin Trial is a Case Study of \sQuote{Individual} Bioequivalence.} Drug Inf J. 1998; 32(4): 1063--72. \doi{10.1177/009286159803200426}
 
-Hauschke D, Steinijans VW, Pigeot I. \emph{Bioequivalence Studies in Drug Development.}\cr
-Chichester: John Wiley; 2007. p216.
+Hauschke D, Steinijans VW, Pigeot I. \emph{Bioequivalence Studies in Drug Development.} Chichester: John Wiley; 2007. p216.
 
-\acronym{U.S.} Food and Drug Administration, Center for Drug Evaluation and Research. \emph{Bioequivalence Studies.}\cr
-Rockville, 1997. \href{https://web.archive.org/web/20170723175533/https://www.fda.gov/downloads/Drugs/ScienceResearch/UCM301481.zip
+\acronym{U.S.} Food and Drug Administration, Center for Drug Evaluation and Research. \emph{Bioequivalence Studies.} Rockville, 1997. \href{https://web.archive.org/web/20170723175533/https://www.fda.gov/downloads/Drugs/ScienceResearch/UCM301481.zip
 }{bioequivalence study files} (archived 2017-07-23)
 }
 

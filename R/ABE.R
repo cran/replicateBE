@@ -1,7 +1,7 @@
-################################################
-# Conventional (unscaled) ABE by ANOVA         #
-# fixed: sequence, subjects, period, treatment #
-################################################
+#########################################################
+# Conventional (unscaled) ABE by ANOVA                  #
+# fixed: sequence, subject(sequence), period, treatment #
+#########################################################
 ABE <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
                 file, set = "", ext, na = ".", sep = ",",
                 dec = ".", logtrans = TRUE, print = TRUE,
@@ -15,6 +15,7 @@ ABE <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
                   dec=dec, logtrans=logtrans, ola=FALSE,
                   print=print, verbose=verbose, ask=ask,
                   theta1=theta1, theta2=theta2, data=data)
+  logtrans <- ret$logtrans
   if (print) { # change from "ABEL" to "ABE"
     if (theta1 <= 0.8) {
       results <- paste0(substr(ret$res.file, 1,
@@ -36,7 +37,6 @@ ABE <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
     descr <- info$descr
     ext   <- ""
   }
-  logtrans <- ret$transf
   os <- Sys.info()[[1]]   # get OS for line-endings in output (Win: CRLF)
   ow <- options("digits") # save options
   options(digits=12)      # increase digits for anova()
@@ -64,8 +64,9 @@ ABE <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
                     paste0(ret$Sub.Seq, collapse="|"),
                     paste0(ret$Miss.seq, collapse="|"),
                     paste0(ret$Miss.per, collapse="|"), alpha,
-                    sprintf("%8.3f", DF), ret$CVwT, ret$CVwR,
-                    100*theta1, 100*theta2, CI[1], CI[2], PE, "fail")
+                    DF, ret$CVwT, ret$CVwR,
+                    100*theta1, 100*theta2, CI[1], CI[2], PE, "fail",
+                    stringsAsFactors=FALSE)
   names(res)<- c("Design", "Method", "n", "nTT", "nRR", "Sub/seq",
                  "Miss/seq", "Miss/per", "alpha", "DF", "CVwT(%)",
                  "CVwR(%)", "BE.lo(%)", "BE.hi(%)", "CI.lo(%)",

@@ -5,7 +5,7 @@ knitr::opts_chunk$set(
 )
 
 ## ----setup---------------------------------------------------------------
-suppressMessages(library(replicateBE))
+library(replicateBE)
 
 ## ----eval=FALSE----------------------------------------------------------
 #  modA <- lm(log(PK) ~ sequence + subject%in%sequence + period + treatment,
@@ -64,13 +64,16 @@ for (i in seq_along(ds)) {
 A  <- method.A(print = FALSE, details = TRUE, data = rds14)
 B2 <- method.B(print = FALSE, details = TRUE, data = rds14, option = 2)
 B1 <- method.B(print = FALSE, details = TRUE, data = rds14, option = 1)
+B3 <- method.B(print = FALSE, details = TRUE, data = rds14, option = 3)
 # Rounding of CI according to the GL
 A[15:19]  <- round(A[15:19],  2) # all effects fixed
 B1[15:19] <- round(B1[15:19], 2) # Satterthwaite's df
 B2[15:19] <- round(B2[15:19], 2) # df acc. to Q&A
-df <- rbind(A[c(2, 15:23)], B1[c(2, 15:23)], B2[c(2, 15:23)])
-names(df)[c(1, 10)] <- c("Meth.", "hw")
-df$hw <- signif(df$hw, 5)
+B3[15:19] <- round(B3[15:19], 2) # Kenward-Roger df
+cs <- c(2, 10, 15:23)
+df <- rbind(A[cs], B1[cs], B2[cs], B3[cs])
+names(df)[c(1, 11)] <- c("Meth.", "hw")
+df[, c(2, 11)] <- signif(df[, c(2, 11)], 5)
 print(df[order(df$BE, df$hw, decreasing = c(FALSE, TRUE)), ],
       row.names = FALSE)
 

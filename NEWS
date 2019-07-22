@@ -1,25 +1,54 @@
+Version 1.0.9
+Published on Github 2019-07-22
+    - Submitted to CRAN.
+
+Version 1.0.8.9000
+Published on Github 2019-07-20
+    - importFrom(pbkrtest, getKR) since on win-builder.r-project.org error
+      'pbkrtest package required for Kenward-Roger's method' (not locally!)
+    - Updated links to EMA's documents (again...) in man-pages. Numbered references.
+    - More informative warning in get.data() if na-specifier does not
+      match the data in columns PK and/or logPK.
+    - Kept column logPK only in rds01 and rds02 because given by the
+      EMA. Removed in rds06, rds12, rds14, rds18, rds19, rds20, rds21
+      (TRTR|RTRR) and rds03, rds17 (TRT|RTR). Man-pages corrected.
+      Reduces the footprint of the library by 5%.
+      Depends now on R >= 3.5.0 (since .rda written with 3.6.0).
+    - Bug fix: Forces logtrans=TRUE if a user asks for an
+      internal dataset which does not have the column logPK.
+    - If 'path.in' and/or 'path.out' not given or specified
+      folder does not exist: Changed cat() to warning().
+    - Cosmetic changes in verbose output of method.A().
+    - suppressMessages() no more needed (vignette and testthat).
+      Issue orginating in rlang and ggplot2 resolved.
+      Both packages don't contain a NEWS file. THX Hadley!
+    - stringsAsFactors=FALSE in res-list of all methods.
+    - Added Kenward-Roger degrees of freedom to method.B (..., option=3).
+    - Removed superfluous options(ow) after models (THX to DL).
+    - Minor changes in man-page of method.A and the vignette.
+
 Version 1.0.8
 Published on Github 2019-06-14
-    - Another fix (THX to Uwe Liges @CRAN)
-      Resubmitted to CRAN
+    - Another fix (THX to Uwe Ligges @CRAN).
+      Resubmitted to CRAN.
 
 Version 1.0.7
 Published on Github 2019-06-14
     - Fixes suggested by <cran-submissions@r-project.org>
-      Resubmitted to CRAN
+      Resubmitted to CRAN.
 
 Version 1.0.6
 Published on Github 2019-06-12
-    - Submitted to CRAN (passed checks at R-release and R-devel)
+    - Submitted to CRAN (passed checks at R-release and R-devel).
 
 Version 1.0.5.9003
 Published on GitHub 2019-06-12
     - Solution: text between \list{}{}
       Discouraged acc. R-Extension Manual 2.1.1!
-    - LaTeX problems partly fixed (THX to Duncan Murdoch on r-help)
-    - Simplified and reordered sources of man-pages
-    - Updated WHO-reference
-    - changed {\eqn{foo\textsubscript}{bar}} to simple {\eqn{foo_{bar}}
+    - LaTeX problems partly fixed (THX to Duncan Murdoch on r-help).
+    - Simplified and reordered sources of man-pages.
+    - Updated WHO-reference.
+    - Changed {\eqn{foo\textsubscript}{bar}} to simple {\eqn{foo_{bar}}
       in two man pages.
       Created another project where all conditional html/latex-statements
       were removed. Still tons of errors in creating the PDF manual.
@@ -27,15 +56,15 @@ Published on GitHub 2019-06-12
       be corrected
     - Small correction in text of box plot of CV.calc.R
       Studentized/standardized does not exactly agree with SAS
-      (uses type=2 by default)
+      (uses type=2 by default).
     - First version of vignette.
-    - Added \tests for testthat()
+    - Added \tests for testthat().
 
 Version 1.0.5.9002
 Published on GitHub 2019-05-30
-    - Updated links in man-pages to reflect changes in the FDA's site
+    - Updated links in man-pages to reflect changes in the FDA's site.
     - Updated links to reference data in info.data.R
-    - Updated links in CSV-files
+    - Updated links in CSV-files.
     - Renamed S3 methods (prefixed with 'repBE') acc. to
       https://github.com/r-lib/rlang/issues/669 THX to MT!
       However, doesn't help. TODO!
@@ -49,7 +78,7 @@ Published on GitHub 2019-04-23
 
 Version 1.0.5.9000
 Published on GitHub 2017-11-25
-    - TODO: CHECK throws a WARNING
+    - TODO: CHECK throws a WARNING.
       checking for unstated dependencies in examples ... WARNING
       Warning in parse(file = files, n = -1L) :
         invalid input found on input connection 'replicateBE-Ex.R'

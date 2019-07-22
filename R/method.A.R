@@ -25,7 +25,7 @@ method.A <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
     descr <- info$descr
     ext   <- ""
   }
-  logtrans <- ret$transf
+  logtrans <- ret$logtrans
   os <- Sys.info()[[1]] # get OS for line-endings in output (Win: CRLF)
   ow <- options()       # save options
   options(digits=12)    # increase digits for anova()
@@ -40,7 +40,7 @@ method.A <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
   if (verbose) {
     name <-  paste0(file, set)
     cat("\nData set", name, "by Method A",
-        paste0("\n", paste0(rep("\u2500", 21+nchar(name)), collapse="")), "\n")
+        paste0("\n", paste0(rep("\u2500", 22+nchar(name)), collapse="")), "\n")
     print(stats::anova(modA)) # otherwise summary of lmerTest is used
     cat("\ntreatment T \u2013 R:\n")
     print(signif(summary(modA)$coefficients["treatmentT", ]), 7)
@@ -53,12 +53,13 @@ method.A <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
                     paste0(ret$Sub.Seq, collapse="|"),
                     paste0(ret$Miss.seq, collapse="|"),
                     paste0(ret$Miss.per, collapse="|"), alpha,
-                    sprintf("%8.3f", DF), ret$CVwT, ret$CVwR, ret$sw.ratio,
+                    DF, ret$CVwT, ret$CVwR, ret$sw.ratio,
                     ret$sw.ratio.upper, ret$BE1, ret$BE2, CI[1], CI[2],
                     PE, "fail", "fail", "fail", log(CI[2])-log(PE),
                     paste0(ret$ol, collapse="|"), ret$CVwR.new,
                     ret$sw.ratio.new, ret$sw.ratio.new.upper, ret$BE.new1,
-                    ret$BE.new2, "fail", "fail", "fail")
+                    ret$BE.new2, "fail", "fail", "fail",
+                    stringsAsFactors=FALSE)
   names(res)<- c("Design", "Method", "n", "nTT", "nRR", "Sub/seq",
                  "Miss/seq", "Miss/per", "alpha", "DF", "CVwT(%)",
                  "CVwR(%)", "sw.ratio", "sw.ratio.CL", "EL.lo(%)",
@@ -113,7 +114,6 @@ method.A <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
     if (res$CI.new == "pass" & res$GMR.new == "pass")
       res$BE.new <- "pass"  # if passing both, conclude BE
   }
-  options(ow) # restore options
   if (details) { # results in default (7 digits) precision
     ret <- res
     if (as.character(res$outlier) == "NA") {

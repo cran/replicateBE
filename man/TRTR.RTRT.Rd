@@ -63,8 +63,7 @@ Datasets from the public domain, edited, or obtained by simulations to be evalua
           \code{period} \tab a factor with 4 levels: 1, 2, 3, 4\cr
           \code{sequence} \tab a factor with 2 levels: TRTR, RTRT\cr
           \code{treatment} \tab a factor with 2 levels: T, R\cr
-          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})\cr
-          \code{logPK} \tab a numeric vector of the natural logarithms of {\code{PK}}
+          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})
         }
       }
       \item{}{}
@@ -114,8 +113,7 @@ The extreme sample size results from high variability, an assumed true GMR 0.85,
           \code{period} \tab a factor with 4 levels: 1, 2, 3, 4\cr
           \code{sequence} \tab a factor with 2 levels: TRTR, RTRT\cr
           \code{treatment} \tab a factor with 2 levels: T, R\cr
-          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})\cr
-          \code{logPK} \tab a numeric vector of the natural logarithms of {\code{PK}}
+          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})
         }
       }
     }
@@ -147,8 +145,7 @@ The extreme sample size results from high variability, an assumed true GMR 0.85,
           \code{period} \tab a factor with 4 levels: 1, 2, 3, 4\cr
           \code{sequence} \tab a factor with 2 levels: TRTR, RTRT\cr
           \code{treatment} \tab a factor with 2 levels: T, R\cr
-          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})\cr
-          \code{logPK} \tab a numeric vector of the natural logarithms of {\code{PK}}
+          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})
         }
       }
     }
@@ -180,8 +177,7 @@ The extreme sample size results from high variability, an assumed true GMR 0.85,
           \code{period} \tab a factor with 4 levels: 1, 2, 3, 4\cr
           \code{sequence} \tab a factor with 2 levels: TRTR, RTRT\cr
           \code{treatment} \tab a factor with 2 levels: T, R\cr
-          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})\cr
-          \code{logPK} \tab a numeric vector of the natural logarithms of {\code{PK}}
+          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})
         }
       }
     }
@@ -197,8 +193,7 @@ The extreme sample size results from high variability, an assumed true GMR 0.85,
           \code{period} \tab a factor with 4 levels: 1, 2, 3, 4\cr
           \code{sequence} \tab a factor with 2 levels: TRTR, RTRT\cr
           \code{treatment} \tab a factor with 2 levels: T, R\cr
-          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})\cr
-          \code{logPK} \tab a numeric vector of the natural logarithms of {\code{PK}}
+          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})
         }
       }
     }
@@ -214,8 +209,7 @@ The extreme sample size results from high variability, an assumed true GMR 0.85,
           \code{period} \tab a factor with 4 levels: 1, 2, 3, 4\cr
           \code{sequence} \tab a factor with 2 levels: TRTR, RTRT\cr
           \code{treatment} \tab a factor with 2 levels: T, R\cr
-          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})\cr
-          \code{logPK} \tab a numeric vector of the natural logarithms of {\code{PK}}
+          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})
         }
       }
     }
@@ -231,8 +225,7 @@ The extreme sample size results from high variability, an assumed true GMR 0.85,
           \code{period} \tab a factor with 4 levels: 1, 2, 3, 4\cr
           \code{sequence} \tab a factor with 2 levels: TRTR, RTRT\cr
           \code{treatment} \tab a factor with 2 levels: T, R\cr
-          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})\cr
-          \code{logPK} \tab a numeric vector of the natural logarithms of {\code{PK}}
+          \code{PK} \tab a numeric vector of pharmacokinetic responses acceptable for reference-scaling (generally \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}})
         }
       }
     }
@@ -310,30 +303,27 @@ Helmut \enc{Schütz}{Schuetz} (R-code for simulations by Detlew Labes), Michael 
 \source{
   \tabular{cll}{
     Dataset \tab Origin \tab Description\cr
-    \code{rds01} \tab EMA, CHMP \tab Data set I.\cr
+    \code{rds01} \tab EMA \tab Annex II.\cr
     \code{rds06} \tab \code{rds01} edited \tab T and R switched.\cr
     \code{rds08} \tab R \tab Large simulated data set with slight heteroscedasticity.\cr
     \code{rds09} \tab \code{rds08} \tab Wide numeric range (data of last 37 subjects multiplied by 1,000,000).\cr
-    \code{rds12} \tab \ifelse{html}{\out{Phoenix&nbsp;NLME}}{Phoenix~NLME} \tab Simulated with extreme intra- and intersubject variability.\cr
+    \code{rds12} \tab Phoenix NLME \tab Simulated with extreme intra- and intersubject variability.\cr
     \code{rds13} \tab \code{rds08} edited \tab Highly incomplete (approx. 50\% of period 4 data deleted).\cr
-    \code{rds14} \tab \ifelse{html}{\out{Phoenix&nbsp;NLME}}{Phoenix~NLME} \tab Simulated with high intra- and intersubject and number of dropouts increasing with period.\cr
+    \code{rds14} \tab Phoenix NLME \tab Simulated with high intra- and intersubject and number of dropouts increasing with period.\cr
     \code{rds15} \tab \code{rds08} edited \tab Highly incomplete (approx. 50\% of period 4 data coded as missing \code{'NA'}).\cr
     \code{rds18} \tab \code{rds14} edited \tab Removed T data of subjects 63–78.\cr
     \code{rds19} \tab \code{rds18} edited \tab Removed data of subjects 63–78.\cr
     \code{rds20} \tab \code{rds19} edited \tab Outlier of R (subject 1) introduced: original value ×100.\cr
     \code{rds21} \tab \code{rds01} edited \tab One extreme result of subjects 45 & 52 set to NA.\cr
     \code{rds25} \tab R \tab Simulated with heteroscedasticity.\cr
-    \code{rds26} \tab \ifelse{html}{\out{Patterson&nbsp;&amp;&nbsp;Jones}}{Patterson~&~Jones} \tab \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}} data given in Tables 4.40 and 4.31.
+    \code{rds26} \tab Patterson & Jones \tab \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}} data given in Tables 4.40 and 4.31.
   }
 }
 
 \references{
-European Medicines Agency, Committee for Medicinal Products for Human Use. \emph{Questions & Answers: positions on specific questions addressed to the Pharmacokinetics Working Party (PKWP).}\cr
-London, 19 November 2015.
-\href{https://www.ema.europa.eu/en/documents/scientific-guideline/questions-answers-positions-specific-questions-addressed-pharmacokinetics-working-party_en.pdf}{EMA/618604/2008 Rev. 13}
+European Medicines Agency. London, 21 September 2016. \href{https://www.ema.europa.eu/en/documents/other/31-annex-i-statistical-analysis-methods-compatible-ema-bioequivalence-guideline_en.pdf}{\emph{Annex I}}, \href{https://www.ema.europa.eu/en/documents/other/31-annex-ii-statistical-analysis-bioequivalence-study-example-data-set_en.pdf}{\emph{Annex II}}.
 
-Patterson SD, Jones B. \emph{Bioequivalence and Statistics in Clinical Pharmacology.}\cr
-Boca Raton: CRC Press; 2\ifelse{html}{\out{<sup>nd</sup>}}{\eqn{^{nd}}} edition 2016. p105--6.
+Patterson SD, Jones B. \emph{Bioequivalence and Statistics in Clinical Pharmacology.} Boca Raton: CRC Press; 2\ifelse{html}{\out{<sup>nd</sup>}}{\eqn{^{nd}}} edition 2016. p105--6.
 }
 
 \examples{
