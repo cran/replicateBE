@@ -90,7 +90,7 @@ for (i in 1:9) {
 }
 q[c(2, 4:8), 4] <- c("SAS, STaTa", "SciPy", "",
                      "Phoenix, Minitab, SPSS",
-                     "R, S, MATLAB, Excel", "Maple")
+                     "R, S, MATLAB, Octave, Excel", "Maple")
 print(as.data.frame(q))
 
 ## ---- sessioninfo-------------------------------------------------------------

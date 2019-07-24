@@ -94,8 +94,7 @@ Hauschke D, Steinijans VW, Pigeot I. \emph{Bioequivalence Studies in Drug Develo
 
 Patterson SD, Jones B. \emph{Bioequivalence and Statistics in Clinical Pharmacology.} Boca Raton: CRC Press; 2\ifelse{html}{\out{<sup>nd</sup>}}{\eqn{^{nd}}} edition 2016. p105--6.
 
-\acronym{U.S.} Food and Drug Administration, Center for Drug Evaluation and Research. \emph{Bioequivalence Studies.} Rockville, 1997. \href{https://web.archive.org/web/20170723175533/https://www.fda.gov/downloads/Drugs/ScienceResearch/UCM301481.zip
-}{bioequivalence study files} (archived 2017-07-23)
+\acronym{U.S.} Food and Drug Administration, Center for Drug Evaluation and Research. \emph{Bioequivalence Studies.} Rockville, 1997. \href{https://web.archive.org/web/20170723175533/https://www.fda.gov/downloads/Drugs/ScienceResearch/UCM301481.zip}{bioequivalence study files} (archived 2017-07-23)
 }
 
 \seealso{
