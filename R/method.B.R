@@ -5,7 +5,7 @@
 # option=1: nlme/lme (Satterthwaite's DF)       #
 # option=2: lmerTest/lmer (CONTAIN/Residual DF) #
 #################################################
-method.B <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
+method.B <- function(alpha = 0.05, path.in = "~/", path.out = "~/",
                      file, set = "", ext, na = ".", sep = ",",
                      dec = ".", logtrans = TRUE, ola = FALSE,
                      print = TRUE, details = FALSE, verbose = FALSE,
@@ -59,7 +59,7 @@ method.B <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
           ": Method B by lme (option=2; ",
           "equivalent to SAS\u2019 DDFM=CONTAIN)"),
           paste0("\n", paste0(rep("\u2500", 70+nchar(name)), collapse="")), "\n")
-      print(anova(modB))
+      print(anova(modB), digits=6)
       cat("\ntreatment T \u2013 R:\n")
       print(signif(EMA.B$tTable["treatmentT", ], 7))
       cat("\n")

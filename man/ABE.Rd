@@ -10,7 +10,7 @@ Comparative BA-calculation for Average Bioequivalence
   \acronym{ANOVA} as recommended in the \acronym{EMA}’s guideline.
 }
 \usage{
-ABE(alpha = 0.05, path.in = NULL, path.out = NULL,
+ABE(alpha = 0.05, path.in = "~/", path.out = "~/",
     file, set = "", ext, na = ".", sep = ",", dec = ".",
     logtrans = TRUE, print = TRUE, details = FALSE,
     verbose = FALSE, ask = FALSE, data = NULL, theta1, theta2)
@@ -162,8 +162,7 @@ If argument \code{print = FALSE}, returns a data.frame with the elements:
     \code{CI.lo(\%)} \tab lower confidence limit of the treatment comparison\cr
     \code{CI.hi(\%)} \tab upper confidence limit of the treatment comparison\cr
     \code{PE(\%)} \tab point estimate of the treatment comparison (aka \acronym{GMR})\cr
-    \code{BE} \tab assessment whether the \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{100(1-2
-\eqn{\alpha}{alpha})} \acronym{CI} lies entirely within the acceptance range (\verb{pass|fail})
+    \code{BE} \tab assessment whether the \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{\eqn{100(1-2\alpha)}{100(1-2alpha)}} \acronym{CI} lies entirely within the acceptance range (\verb{pass|fail})
   }
 }
 

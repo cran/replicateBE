@@ -11,7 +11,7 @@ Comparative BA-calculation for Average Bioequivalence with Expanding Limits by t
   random effect (\sQuote{Method B}) as specified in \emph{Annex I}.
 }
 \usage{
-method.B(alpha = 0.05, path.in = NULL, path.out = NULL,
+method.B(alpha = 0.05, path.in = "~/", path.out = "~/",
          file, set = "", ext, na = ".", sep = ",", dec = ".",
          logtrans = TRUE, ola = FALSE, print = TRUE, details = FALSE,
          verbose = FALSE, ask = FALSE, plot.bxp = FALSE,
@@ -203,8 +203,7 @@ If argument \code{print = FALSE}, returns a data.frame with the elements:
     \code{CI.lo(\%)} \tab lower confidence limit of the treatment comparison\cr
     \code{CI.hi(\%)} \tab upper confidence limit of the treatment comparison\cr
     \code{PE(\%)} \tab point estimate of the treatment comparison (aka \acronym{GMR})\cr
-    \code{CI} \tab assessment whether the \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{100(1–2
-\eqn{\alpha}{alpha})} \acronym{CI} lies entirely within the acceptance range (\verb{pass|fail})\cr
+    \code{CI} \tab assessment whether the \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{\eqn{100(1-2\alpha)}{100(1-2alpha)}} \acronym{CI} lies entirely within the acceptance range (\verb{pass|fail})\cr
     \code{GMR} \tab assessment whether the \acronym{PE} lies entirely within the \acronym{GMR}-restriction 80.00\%\enc{–}{-}125.00\% (\verb{pass|fail})\cr
     \code{BE} \tab mixed (aggregate) assessment whether the study demonstrates bioequivalence (\verb{pass|fail})\cr
     \code{log.half-width} \tab half-width of the confidence interval in log-scale
@@ -231,8 +230,7 @@ If \code{ola=TRUE} and at least one outlier was detected:
   }
 }
   \tabular{ll}{
-    \code{CI.new} \tab assessment whether the \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{100(1–2
-\eqn{\alpha}{alpha})} \acronym{CI} lies entirely within the new acceptance range (\verb{pass|fail})\cr
+    \code{CI.new} \tab assessment whether the \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{\eqn{100(1-2\alpha)}{100(1-2alpha)}} \acronym{CI} lies entirely within the new acceptance range (\verb{pass|fail})\cr
     \code{GMR.new} \tab assessment whether the \acronym{PE} lies entirely within the \acronym{GMR}-restriction 80.00\%\enc{–}{-}125.00\% (\verb{pass|fail})\cr
     \code{BE.new} \tab mixed (aggregate) assessment whether the study demonstrates bioequivalence (\verb{pass|fail})\cr
   }
@@ -331,6 +329,7 @@ Helmut \enc{Schütz}{Schuetz}, Michael Tomashevskiy, Detlew Labes
   European Medicines Agency, Committee for Medicinal Products for Human Use. \emph{Guideline on the Investigation of Bioequivalence.} London, 20 January 2010. \href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf}{CPMP/EWP/QWP/1401/98 Rev. 1/ Corr **}
 
   3\ifelse{html}{\out{<sup>rd</sup>}}{\eqn{^{rd}}} \acronym{EGA} Symposium on Bioequivalence. \emph{Questions and Answers on the Revised \acronym{EMA} Bioequivalence Guideline.} London, 1 June 2010. \href{https://www.medicinesforeurope.com/wp-content/uploads/2016/03/EGA_BEQ_QA_WEB_QA_1_32.pdf}{open access}
+
   European Medicines Agency, Committee for Medicinal Products for Human Use. \emph{Questions & Answers: positions on specific questions addressed to the Pharmacokinetics Working Party (PKWP).} London, 19 November 2015. \href{https://www.ema.europa.eu/en/documents/scientific-guideline/questions-answers-positions-specific-questions-addressed-pharmacokinetics-working-party_en.pdf}{EMA/618604/2008 Rev. 13}
 
   European Medicines Agency. \emph{Clinical pharmacology and pharmacokinetics: questions and answers. 3.1 Which statistical method for the analysis of a bioequivalence study does the Agency recommend? Annex I}. London, 21 September 2016. \href{https://www.ema.europa.eu/en/documents/other/31-annex-i-statistical-analysis-methods-compatible-ema-bioequivalence-guideline_en.pdf}{EMA/582648/2016}

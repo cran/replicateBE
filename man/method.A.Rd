@@ -12,7 +12,7 @@
 }
 
 \usage{
-method.A(alpha = 0.05, path.in = NULL, path.out = NULL,
+method.A(alpha = 0.05, path.in = "~/", path.out = "~/",
          file, set = "", ext, na = ".", sep = ",", dec = ".",
          logtrans = TRUE, ola = FALSE, print = TRUE, details = FALSE,
          adjust = FALSE, verbose = FALSE, ask = FALSE,
@@ -206,8 +206,7 @@ If argument \code{print = FALSE}, returns a data.frame with the elements:
     \code{CI.lo(\%)} \tab lower confidence limit of the treatment comparison\cr
     \code{CI.hi(\%)} \tab upper confidence limit of the treatment comparison\cr
     \code{PE(\%)} \tab point estimate of the treatment comparison (aka \acronym{GMR})\cr
-    \code{CI} \tab assessment whether the \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{100(1–2
-\eqn{\alpha}{alpha})} \acronym{CI} lies entirely within the acceptance range (\verb{pass|fail})\cr
+    \code{CI} \tab assessment whether the \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{\eqn{100(1-2\alpha)}{100(1-2alpha)}} \acronym{CI} lies entirely within the acceptance range (\verb{pass|fail})\cr
     \code{GMR} \tab assessment whether the \acronym{PE} lies entirely within the \acronym{GMR}-restriction 80.00\%\enc{–}{-}125.00\% (\verb{pass|fail})\cr
     \code{BE} \tab mixed (aggregate) assessment whether the study demonstrates bioequivalence (\verb{pass|fail})\cr
     \code{log.half-width} \tab half-width of the confidence interval in log-scale
@@ -234,8 +233,7 @@ If \code{ola=TRUE} and at least one outlier was detected:
   }
 }
   \tabular{ll}{
-    \code{CI.new} \tab assessment whether the \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{100(1–2
-\eqn{\alpha}{alpha})} \acronym{CI} lies entirely within the new acceptance range (\verb{pass|fail})\cr
+    \code{CI.new} \tab assessment whether the \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{\eqn{100(1-2\alpha)}{100(1-2alpha)}} \acronym{CI} lies entirely within the new acceptance range (\verb{pass|fail})\cr
     \code{GMR.new} \tab assessment whether the \acronym{PE} lies entirely within the \acronym{GMR}-restriction 80.00\%\enc{–}{-}125.00\% (\verb{pass|fail})\cr
     \code{BE.new} \tab mixed (aggregate) assessment whether the study demonstrates bioequivalence (\verb{pass|fail})\cr
   }

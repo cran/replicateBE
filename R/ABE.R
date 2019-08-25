@@ -2,7 +2,7 @@
 # Conventional (unscaled) ABE by ANOVA                  #
 # fixed: sequence, subject(sequence), period, treatment #
 #########################################################
-ABE <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
+ABE <- function(alpha = 0.05, path.in = "~/", path.out = "~/",
                 file, set = "", ext, na = ".", sep = ",",
                 dec = ".", logtrans = TRUE, print = TRUE,
                 details = FALSE, verbose = FALSE, ask = FALSE,
@@ -52,7 +52,7 @@ ABE <- function(alpha = 0.05, path.in = NULL, path.out = NULL,
     name <-  paste0(file, set)
     cat("\nData set", name, "by ABE",
         paste0("\n", paste0(rep("\u2500", 16+nchar(name)), collapse="")), "\n")
-    print(stats::anova(mod)) # otherwise summary of lmerTest is used
+    print(stats::anova(mod), digits=7) # otherwise summary of lmerTest is used
     cat("\ntreatment T \u2013 R:\n")
     print(signif(summary(mod)$coefficients["treatmentT", ]), 7)
     cat(anova(mod)["Residuals", "Df"], "Residual Degrees of Freedom\n\n")
