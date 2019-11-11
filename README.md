@@ -1,7 +1,39 @@
 replicateBE
 ================
 
+  - [Comparative BA-calculation for the EMA’s Average Bioequivalence
+    with Expanding Limits
+    (ABEL)](#comparative-ba-calculation-for-the-emas-average-bioequivalence-with-expanding-limits-abel)
+  - [Introduction](#introduction)
+      - [Methods](#methods)
+          - [Estimation of *CV<sub>wR</sub>* (and *CV<sub>wT</sub>* in
+            full replicate
+            designs)](#estimation-of-cvwr-and-cvwt-in-full-replicate-designs)
+          - [Method A](#method-a)
+          - [Method B](#method-b)
+          - [Average Bioequivalence](#average-bioequivalence)
+      - [Tested designs](#tested-designs)
+          - [Four period (full)
+            replicates](#four-period-full-replicates)
+          - [Three period (full)
+            replicates](#three-period-full-replicates)
+          - [Two period (full) replicate](#two-period-full-replicate)
+          - [Three period (partial)
+            replicates](#three-period-partial-replicates)
+      - [Cross-validation](#cross-validation)
+  - [Examples](#examples)
+  - [Installation](#installation)
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+[![cran
+checks](https://cranchecks.info/badges/summary/replicateBE)](https://cran.r-project.org/web/checks/check_results_replicateBE.html)
+[![CRAN RStudio mirror
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/replicateBE?color=blue)](https://r-pkg.org/pkg/replicateBE)
+[![CRAN RStudio mirror
+downloads](https://cranlogs.r-pkg.org/badges/last-month/replicateBE?color=green)](https://r-pkg.org/pkg/replicateBE)
+
+Version 1.0.12 built 2019-11-11 with R 3.6.1.
 
 ## Comparative BA-calculation for the EMA’s Average Bioequivalence with Expanding Limits (ABEL)
 
@@ -13,8 +45,9 @@ Health Resulting from Use of this R-Code.**
 
 The library provides data sets (internal `.rda` and in CSV-format in
 `/extdata/`) which support users in a black-box performance
-qualification (PQ) of their software installations. The methods given by
-the EMA in [Annex
+qualification (PQ) of their software installations. Users can perform
+analysis of their own data imported from CSV- and Excel-files. The
+methods given by the EMA in [Annex
 I](https://www.ema.europa.eu/en/documents/other/31-annex-i-statistical-analysis-methods-compatible-ema-bioequivalence-guideline_en.pdf "EMA/582648/2016, 21 September 2016")
 for reference-scaling according to the EMA’s [Guideline on the
 Investigation of
@@ -29,6 +62,8 @@ upper confidence limit of *σ<sub>wT</sub>*/*σ<sub>wR</sub>* (required
 for the [WHO’s
 approach](https://extranet.who.int/prequal/sites/default/files/documents/AUC_criteria_November2018.pdf "Geneva, November 2018")
 for reference-scaling of *AUC*).
+
+<small>[TOC ↩](#readme)</small>
 
 ### Methods
 
@@ -47,6 +82,8 @@ modCVwT <- lm(log(PK) ~ sequence + subject%in%sequence + period,
                         data = data[data$treatment == "T", ])
 ```
 
+<small>[TOC ↩](#readme)</small>
+
 #### Method A
 
 Called by function `method.A()`. A linear model of log-transformed PK
@@ -59,6 +96,8 @@ where all effects are fixed (*i.e.*, ANOVA). Estimated by the function
 modA <- lm(log(PK) ~ sequence + subject%in%sequence + period + treatment,
                      data = data)
 ```
+
+<small>[TOC ↩](#readme)</small>
 
 #### Method B
 
@@ -104,19 +143,23 @@ modB <- lmer(log(PK) ~ sequence + period + treatment + (1|subject),
                        data = data)
 ```
 
+<small>[TOC ↩](#readme)</small>
+
 #### Average Bioequivalence
 
 Called by function `ABE()`. The model is identical to
-[Method A](#methodA). Conventional BE limits (80.00 – 125.00%) are
+[Method A](#method-a). Conventional BE limits (80.00 – 125.00%) are
 employed by default. Tighter limits for narrow therapeutic index drugs
 (EMA 90.00 – 111.11%) or wider limits (75.00 – 133.33% for
 *C<sub>max</sub>* according to the guideline of the Gulf Cooperation
 Council (Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, and the United Arab
 Emirates) can be specified.
 
-#### Tested designs
+<small>[TOC ↩](#readme)</small>
 
-##### Four period (full) replicates
+### Tested designs
+
+#### Four period (full) replicates
 
 `TRTR | RTRT`  
 `TRRT | RTTR`  
@@ -126,23 +169,25 @@ recommended*)</small>
 `TRRT | RTTR | TTRR | RRTT` <small>(confounded effects, *not
 recommended*)</small>
 
-##### Three period (full) replicates
+#### Three period (full) replicates
 
 `TRT | RTR`  
 `TRR | RTT`
 
-##### Two period (full) replicate
+#### Two period (full) replicate
 
 `TR | RT | TT | RR` <small>(Balaam’s design; *not recommended* due to
 poor power characteristics)</small>
 
-##### Three period (partial) replicates
+#### Three period (partial) replicates
 
 `TRR | RTR | RRT`  
 `TRR | RTR` <small>(Extra-reference design; biased in the presence of
 period effects, *not recommended*)</small>
 
-#### Cross-validation
+<small>[TOC ↩](#readme)</small>
+
+### Cross-validation
 
 Details about the reference datasets:
 
@@ -154,6 +199,8 @@ help("data", package = "replicateBE")
 Results of the 28 reference datasets agree with ones obtained in SAS
 (9.4), Phoenix WinNonlin (6.4 – 8.1), STATISTICA (13), SPSS (22.0),
 Stata (15.0), and JMP (10.0.2).
+
+<small>[TOC ↩](#readme)</small>
 
 ## Examples
 
@@ -193,6 +240,8 @@ print(round(res[cols], 2), row.names=FALSE)
 CVwR(%) EL.lo(%) EL.hi(%) CI.lo(%) CI.hi(%)  PE(%)
   46.96    71.23    140.4   107.11   124.89 115.66
 ```
+
+<small>[TOC ↩](#readme)</small>
 
   - Same dataset evaluated by Method B. Outlier assessment,
     recalculation of *CV<sub>wR</sub>* after exclusion of outliers, new
@@ -238,9 +287,11 @@ CVwR.new(%) EL.new.lo(%) EL.new.hi(%) CI.lo(%) CI.hi(%)  PE(%)
       32.16        78.79       126.93   107.17   124.97 115.73
 ```
 
+<small>[TOC ↩](#readme)</small>
+
 ## Installation
 
-Install the released version from CRAN
+Install the released version from CRAN:
 
 ``` r
 install.packages("replicateBE", repos = "https://cloud.r-project.org/")
@@ -252,3 +303,5 @@ Install the development version from GitHub:
 # install.packages("devtools", repos = "https://cloud.r-project.org/")
 devtools::install_github("Helmut01/replicateBE")
 ```
+
+<small>[TOC ↩](#readme)</small>
