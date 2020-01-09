@@ -33,18 +33,16 @@ ABE(alpha = 0.05, path.in = "~/", path.out = "~/",
     user’s home folder \verb{"~/"} will be used.
   }
   \item{file}{
-    Name of the dataset for import (\emph{without} extension). Must be
-    a string (\emph{i.e.}, enclosed in single or double quotation marks).
+    Name of the dataset for import (\emph{without} extension). Must be a string
+    (\emph{i.e.}, enclosed in single or double quotation marks). The name is
+    case-sensitive.
   }
   \item{set}{
-    Name of the sheet of an Excel-file (mandatory). Must be a string
-    (\emph{i.e.}, enclosed in single or double quotation marks).
+    Name of the sheet of an Excel-file (mandatory). Must be a string (\emph{i.e.},
+    enclosed in single or double quotation marks). The name is case-sensitive.
   }
   \item{ext}{
-    File-extension enclosed in single or double quotation marks.
-    Acceptable are \verb{"CSV"} and \verb{"csv"} for comma delimited
-    variables (\acronym{CSV}) or \verb{"XLS"}, \verb{"xls"}, \verb{"XLSX"},
-    and \verb{"xlsx"} for Excel-files.
+    File-extension ("csv" or "xls(x)") enclosed in single or double quotation marks.
   }
   \item{na}{
     Character string denoting missing values. Acceptable are \verb{"NA"}
@@ -55,13 +53,13 @@ ABE(alpha = 0.05, path.in = "~/", path.out = "~/",
   }
   \item{sep}{
     Variable separator in the \acronym{CSV}-file. Acceptable are \verb{","}
-    (comma -- \verb{ASCII 44}), \verb{";"} (semicolon -- \verb{ASCII 59}),
-    and \verb{"\\t"} (tabulator -- \verb{ASCII 9}). Defaults to \verb{","}.
+    (comma = \verb{ASCII 44}), \verb{";"} (semicolon = \verb{ASCII 59}),
+    and \verb{"\\t"} (tabulator = \verb{ASCII 9}). Defaults to \verb{","}.
   }
   \item{dec}{
-    Decimal separator in the \acronym{CSV}-file. Acceptable are
-    \verb{"."} (period -- \verb{ASCII 46}) or \verb{","}
-    (comma -- \verb{ASCII 44}). Defaults to \verb{"."}.
+    Decimal separator in the \acronym{CSV}-file. Acceptable are \verb{"."}
+    (period = \verb{ASCII 46}) or \verb{","} (comma = \verb{ASCII 44}).
+    Defaults to \verb{"."}.
   }
   \item{logtrans}{
     If \code{TRUE} (default) the raw data (provided in column \verb{PK})
@@ -93,11 +91,11 @@ ABE(alpha = 0.05, path.in = "~/", path.out = "~/",
     from a file).
   }
   \item{theta1}{
-    Lower bioequivalence limit. Defaults to \verb{0.80}. If missing
+    Lower limit of the acceptance range. Defaults to \verb{0.80}. If missing
     will be set to \code{1/theta2}.
   }
   \item{theta2}{
-    Lower bioequivalence limit. Defaults to \verb{1.25}. If missing
+    Upper limit of the acceptance range. Defaults to \verb{1.25}. If missing
     will be set to \code{1/theta1}.
   }
 }
@@ -169,7 +167,7 @@ If argument \code{print = FALSE}, returns a data.frame with the elements:
 \section{Warning}{
   Files may contain a commentary header. If reading from a \acronym{CSV}-file,
   \emph{each} line of the commentary header \emph{must} start with \verb{"# "}
-  (hash-space -- \verb{ASCII 35-32}). If reading from an \acronym{XLS}-file
+  (hash space = \verb{ASCII 35 ASCII 32}). If reading from an Excel-file
   all lines preceding the column headers are treated as a comment.
 }
 
@@ -203,8 +201,11 @@ If argument \code{print = FALSE}, returns a data.frame with the elements:
   \ifelse{html}{\out{AUC<sub>0&ndash;t</sub>}}{\eqn{AUC_{0-t}}},
   \ifelse{html}{\out{AUC<sub>0&ndash;&infin;</sub>}}{\eqn{AUC_{0-\infty}}},
   \ifelse{html}{\out{AUC<sub>0&ndash;&tau;</sub>}}{\eqn{AUC_{0-\tau}}}
-  (modified release products).\cr\cr
-  \strong{Program offered for Use without any Guarantees and Absolutely No Warranty. No Liability is accepted for any Loss and Risk to Public Health Resulting from Use of this R-Code.}
+  (modified release products).
+}
+
+\section{Disclaimer}{
+  \emph{Program offered for Use without any Guarantees and Absolutely No Warranty. No Liability is accepted for any Loss and Risk to Public Health Resulting from Use of this R-Code.}
 }
 
 \author{
@@ -212,9 +213,10 @@ Helmut \enc{Schütz}{Schuetz}
 }
 
 \references{
-  European Medicines Agency, Committee for Medicinal Products for Human Use. \emph{Guideline on the Investigation of Bioequivalence.} London, 20 January 2010. \href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf}{CPMP/EWP/QWP/1401/98 Rev. 1/ Corr **}
 
-  European Medicines Agency, Committee for Medicinal Products for Human Use. \emph{Guideline on the pharmacokinetic and clinical evaluation of modified release dosage forms.} London, 20 November 2014.
+European Medicines Agency, Committee for Medicinal Products for Human Use. \emph{Guideline on the Investigation of Bioequivalence.} London, 20 January 2010. \href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf}{CPMP/EWP/QWP/1401/98 Rev. 1/ Corr **}
+
+European Medicines Agency, Committee for Medicinal Products for Human Use. \emph{Guideline on the pharmacokinetic and clinical evaluation of modified release dosage forms.} London, 20 November 2014.
 \href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-clinical-evaluation-modified-release-dosage-forms_en.pdf}{EMA/CPMP/EWP/280/96 Corr1}
 }
 
@@ -249,5 +251,4 @@ ABE(data = rds02, theta1 = 0.90)
 # Should result in:
 #   BE-limits          :  90.00\% ... 111.11\%
 #   Confidence interval:  97.32\% ... 107.46\%  pass
-#   Point estimate     : 102.26\%}
-}
+#   Point estimate     : 102.26\%}}

@@ -8,8 +8,10 @@ ABE <- function(alpha = 0.05, path.in = "~/", path.out = "~/",
                 details = FALSE, verbose = FALSE, ask = FALSE,
                 data = NULL, theta1, theta2) {
   exec <- strftime(Sys.time(), usetz=TRUE)
-  if (missing(theta1)) theta1 <- 0.80
-  if (missing(theta2)) theta2 <- 1/theta1
+  if (!missing(ext)) ext <- tolower(ext) # case-insensitive
+  if (missing(theta1) & missing(theta2)) theta1 <- 0.80
+  if (missing(theta1)) theta1 = 1/theta2
+  if (missing(theta2)) theta2 = 1/theta1
   ret  <- CV.calc(alpha=alpha, path.in=path.in, path.out=path.out,
                   file=file, set=set, ext=ext, na=na, sep=sep,
                   dec=dec, logtrans=logtrans, ola=FALSE,
@@ -50,12 +52,12 @@ ABE <- function(alpha = 0.05, path.in = "~/", path.out = "~/",
   }
   if (verbose) {
     name <-  paste0(file, set)
-    cat("\nData set", name, "by ABE",
-        paste0("\n", paste0(rep("\u2500", 16+nchar(name)), collapse="")), "\n")
-    print(stats::anova(mod), digits=7) # otherwise summary of lmerTest is used
+    cat(paste0("\nData set ", name, ": ABE by lm()"),
+        paste0("\n", paste0(rep("\u2500", 22+nchar(name)), collapse="")), "\n")
+    print(stats::anova(mod), digits=6, signif.stars=FALSE) # otherwise summary of lmerTest is used
     cat("\ntreatment T \u2013 R:\n")
-    print(signif(summary(mod)$coefficients["treatmentT", ]), 7)
-    cat(anova(mod)["Residuals", "Df"], "Residual Degrees of Freedom\n\n")
+    print(signif(summary(mod)$coefficients["treatmentT", ]), 6)
+    cat(anova(mod)["Residuals", "Df"], "Degrees of Freedom\n\n")
   }
   PE  <- exp(coef(mod)[["treatmentT"]])
   CI  <- as.numeric(exp(confint(mod, "treatmentT", level=1-2*alpha)))
@@ -69,16 +71,16 @@ ABE <- function(alpha = 0.05, path.in = "~/", path.out = "~/",
                     stringsAsFactors=FALSE)
   names(res)<- c("Design", "Method", "n", "nTT", "nRR", "Sub/seq",
                  "Miss/seq", "Miss/per", "alpha", "DF", "CVwT(%)",
-                 "CVwR(%)", "BE.lo(%)", "BE.hi(%)", "CI.lo(%)",
-                 "CI.hi(%)", "PE(%)", "BE")
+                 "CVwR(%)", "BE.lo(%)", "BE.hi(%)", "CL.lo(%)",
+                 "CL.hi(%)", "PE(%)", "BE")
   # Convert CVs, limits, PE, and CI (till here as fractions) to percent
   res$"CVwT(%)"  <- 100*res$"CVwT(%)"
   res$"CVwR(%)"  <- 100*res$"CVwR(%)"
   res$"PE(%)"    <- 100*res$"PE(%)"
-  res$"CI.lo(%)" <- 100*res$"CI.lo(%)"
-  res$"CI.hi(%)" <- 100*res$"CI.hi(%)"
-  if (round(res$"CI.lo(%)", 2) >= 100*theta1 &
-      round(res$"CI.hi(%)", 2) <= 100*theta2)
+  res$"CL.lo(%)" <- 100*res$"CL.lo(%)"
+  res$"CL.hi(%)" <- 100*res$"CL.hi(%)"
+  if (round(res$"CL.lo(%)", 2) >= 100*theta1 &
+      round(res$"CL.hi(%)", 2) <= 100*theta2)
     res$BE <- "pass" # CI within acceptance range
   options(ow) # restore options
   if (details) { # results in default (7 digits) precision
@@ -92,8 +94,8 @@ ABE <- function(alpha = 0.05, path.in = "~/", path.out = "~/",
   res$"BE.lo(%)" <- round(res$"BE.lo(%)", 2)
   res$"BE.hi(%)" <- round(res$"BE.hi(%)", 2)
   res$"PE(%)"    <- round(res$"PE(%)", 2)
-  res$"CI.lo(%)" <- round(res$"CI.lo(%)", 2)
-  res$"CI.hi(%)" <- round(res$"CI.hi(%)", 2)
+  res$"CL.lo(%)" <- round(res$"CL.lo(%)", 2)
+  res$"CL.hi(%)" <- round(res$"CL.hi(%)", 2)
   overwrite <- TRUE # default
   if (print) { # to file in UTF-8
     if (ask & file.exists(results)) {
@@ -115,7 +117,7 @@ ABE <- function(alpha = 0.05, path.in = "~/", path.out = "~/",
                 " (", 100*(1-2*alpha), "% CI)")
   txt <- paste0(txt,
                 "\nConfidence interval: ", sprintf("%6.2f%% ... %6.2f%%",
-                res$"CI.lo(%)", res$"CI.hi(%)"), "  ", res$BE,
+                res$"CL.lo(%)", res$"CL.hi(%)"), "  ", res$BE,
                 "\nPoint estimate     : ", sprintf("%6.2f%%", res$"PE(%)"), "\n")
   txt <- paste0(txt,
                 repBE.draw.line(called.from="ABE", L=ret$BE1, U=ret$BE2,
@@ -129,10 +131,10 @@ ABE <- function(alpha = 0.05, path.in = "~/", path.out = "~/",
     txt <- paste0(txt, "\nNote: Confounded effects; design not recommended.")
   txt <- paste0(txt, "\n")
   if (print & overwrite) {
-    res.file <- file(description=results, open="ab")
-    res.str  <- txt # UNIXes LF
-    if (os == "Windows") res.str <- gsub("\n", "\r\n", res.str) # CRLF
-    if (os == "Darwin")  res.str <- gsub("\n", "\r", res.str)   # CR
+    res.file <- file(results, open="ab")                        # line endings
+    res.str  <- txt                                             # LF (UNIXes, Solaris)
+    if (os == "Windows") res.str <- gsub("\n", "\r\n", res.str) # CRLF (Windows)
+    if (os == "Darwin")  res.str <- gsub("\n", "\r", res.str)   # CR (OSX)
     writeBin(charToRaw(res.str), res.file)
     close(res.file)
   }
