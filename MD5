@@ -1,6 +1,6 @@
-9dd0671075143716dc6a9b01c5ebe534 *DESCRIPTION
+aabdd6107b83afba7c9079cbc308b382 *DESCRIPTION
 9066aaa3874018da96aa7310bcfd6ac2 *NAMESPACE
-5cc60d4a2536f4c33d6df786b27b9032 *NEWS.md
+65f7c2ae8ce4b17aef99ff12aa764179 *NEWS.md
 8940137d220ff78b8ebd729ea536d7e4 *R/ABE.R
 4557fab460958c1448fd64efe7f5f6ba *R/CV.calc.R
 d233e59155029d97a50e1ecc4c5a5851 *R/get.data.R
@@ -11,9 +11,9 @@ cd371eda4d4e233d54491fdf4247b65b *R/method.A.R
 e52796507f4c6c187520d8451e9b30cf *R/method.B.R
 e20b10e8554174b87ed734c4a5651116 *R/repBE.draw.line.R
 985945501f437536034c2cc8c649efb8 *R/repBE.print.R
-2cde021a708802ea55f093af0f36f86d *README.md
-9d18525befe5344a4e5b9c46eb6a59d5 *build/partial.rdb
-2d49c0d7f0cbf288283e176ba5df2a5f *build/vignette.rds
+0938973c72292d6f73bdfdb28924d3f8 *README.md
+0ecf803e69535be9e342192ca0e8cc09 *build/partial.rdb
+3d35aaf9811fc3da012834d8ab3a7e82 *build/vignette.rds
 27af4dd9b3127547c6bd644d826101ec *data/TR.RT.TT.RR.rda
 272474838c655d14afef15cfa761fd86 *data/TRR.RRT.rda
 12c00d2a8238f6bf56550ab28df6beb0 *data/TRR.RTR.RRT.rda
@@ -25,8 +25,8 @@ e20b10e8554174b87ed734c4a5651116 *R/repBE.draw.line.R
 38d91201bc89b5f3285e9b8ed755d5a5 *data/TRTR.RTRT.rda
 4ed73fb28fa397d0df303f76ee82163c *data/TTRR.RRTT.rda
 6b1a59ef7bcfce4efdf3d5e122c73c9f *inst/doc/vignette.R
-8263775c7f165cf1fd1439b71fe6f879 *inst/doc/vignette.Rmd
-42edbefe6385404625a9ca61409f4182 *inst/doc/vignette.html
+931db596ef4aec738c3df09b69c77d85 *inst/doc/vignette.Rmd
+4ddb167daac9ac99ed27bd287922e390 *inst/doc/vignette.html
 5c27c093e96f733512eb3959b7a1547d *inst/extdata/DS01.csv
 61156f9cb2189e7b58afe0aa0ca82b80 *inst/extdata/DS02.csv
 c1238346d0b333c407723f45a26dafc3 *inst/extdata/DS03.csv
@@ -72,8 +72,8 @@ f7794b0d1acb728b2d89dfd649c3910b *man/data.Rd
 19054c30f82af6dd0085cbf9d33de274 *man/method.A.Rd
 dd3390a8dbe419ae1694a1ff14e9de9f *man/method.B.Rd
 857e1f9ced99c4ed6f7cfd1ab90b5650 *tests/testthat.R
-4b4e549f6502ab6d9c81ac6f961d1153 *tests/testthat/testthat.R
+9190e407ff9703586016f0d07e59c4cc *tests/testthat/testthat.R
 ebb7f3dd8c9235111f4443baf8807e73 *vignettes/figure1.png
 eb032d0433c7d4cf7a0b5b18f7689367 *vignettes/toparrow.png
-8263775c7f165cf1fd1439b71fe6f879 *vignettes/vignette.Rmd
+931db596ef4aec738c3df09b69c77d85 *vignettes/vignette.Rmd
 ba8585265b6253181e4f5682da29976c *vignettes/vignette.css

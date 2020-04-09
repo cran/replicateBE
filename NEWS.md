@@ -1,11 +1,27 @@
+# replicateBE 1.0.14
+
+Published on Github 2020-04-08.
+
+## Bug fixes
+
+  * Changed expected value of `DF` obtained by `method.B(..., data = rds30, option = 1)` from 17.86418 to 17.86417 and reduced `tolerance` in function `expect_equivalent()` of `testthat` from 5e-7 to 1e-6. Prevents errors with r-devel on Linux and r-patched on Solaris. Not relevant because the CI passed already with the more strict tolerance and in practice only four to five significant digits (not seven) are required for the CI. Furthermore, all tests passed with the current release (R3.6.3) on all operating systems.
+
+# replicateBE 1.0.13.9000
+
+Started new version on GitHub 2020-01-10.
+
+## Minor changes
+
+  * Cosmetic changes in vignette, installation more detailed given in `README`.
+
 # replicateBE 1.0.13
 
-Published on Github 2020-01-09.
+Published on Github 2020-01-09, on CRAN.
 
 ## Bug fixes
 
   * Converts `ext` to lower-case. Mixed-case threw an error.
-  * Resolved [issue 2](https://github.com/Helmut01/replicateBE/issues/2) raised by MT. Results were correct but the message an annoyance. Use `as.data.frame(read_excel(..., col_names = FALSE, .name_repair = "minimal"))` in `get.data()`. Since the file may contain a commentary header, we need `col_names = FALSE` and construct the names later (*i.e.*, the default `col_names = TRUE` is not possible).
+  * Resolved [issue 2](https://github.com/Helmut01/replicateBE/issues/2) raised by MT. Results were correct but the message an annoyance. Now use `as.data.frame(read_excel(..., col_names = FALSE, .name_repair = "minimal"))` in `get.data()`. Since the file may contain a commentary header, we need `col_names = FALSE` and construct the names later (*i.e.*, the default `col_names = TRUE` is not possible).
 
 ## Minor changes
 
