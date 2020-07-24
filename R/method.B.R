@@ -5,12 +5,12 @@
 # option=1: nlme/lme (Satterthwaite's DF)       #
 # option=2: lmerTest/lmer (CONTAIN/Residual DF) #
 #################################################
-method.B <- function(alpha = 0.05, path.in = "~/", path.out = "~/",
-                     file, set = "", ext, na = ".", sep = ",",
-                     dec = ".", logtrans = TRUE, ola = FALSE,
-                     print = TRUE, details = FALSE, verbose = FALSE,
-                     ask = FALSE, plot.bxp = FALSE, fence = 2,
-                     data = NULL, option = 2) {
+method.B <- function(alpha = 0.05, path.in, path.out, file,
+                     set = "", ext, na = ".", sep = ",", dec = ".",
+                     logtrans = TRUE, ola = FALSE, print = TRUE,
+                     details = FALSE, verbose = FALSE, ask = FALSE,
+                     plot.bxp = FALSE, fence = 2, data = NULL,
+                     option = 2) {
   exec <- strftime(Sys.time(), usetz=TRUE)
   if (!missing(ext)) ext <- tolower(ext) # case-insensitive
   ret  <- CV.calc(alpha=alpha, path.in=path.in, path.out=path.out,
@@ -23,7 +23,7 @@ method.B <- function(alpha = 0.05, path.in = "~/", path.out = "~/",
   if (option == 1) DF.suff <- "Satt"
   if (option == 2) DF.suff <- "GL"
   if (option == 3) DF.suff <- "KR"
-  results  <- paste0(ret$res.file, "_MethodB_DF_", DF.suff, ".txt")
+  results <- paste0(ret$res.file, "_MethodB_DF_", DF.suff, ".txt")
   # generate variables based on the attribute
   # 2nd condition: Otherwise, the header from a CSV file will be overwritten
   if (!is.null(data) & missing(ext)) {

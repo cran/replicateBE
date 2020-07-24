@@ -1,12 +1,11 @@
 #################################
-# Get the data from the file or #
+# Get the data from a file or   #
 # internal data and generate    #
 # output common to all methods. #
 #################################
 get.data <- function(path.in, path.out, file, set = "",
                      ext, na = ".", sep = ",", dec = ".",
                      logtrans = TRUE, print, plot.bxp, data) {
-  graphics.off()
   transf <- logtrans # default
   if (is.null(data)) { # checking external data
     if (!missing(ext)) ext <- tolower(ext) # case-insensitive
@@ -34,39 +33,28 @@ get.data <- function(path.in, path.out, file, set = "",
     if (ext %in% ext.xls & (set == ""))
       stop("Reading Excel\n       Argument 'set' (name of worksheet) must be given.")
     if (is.null(path.in) | missing(path.in)) {
-      home.path <- getwd()
-      setwd(home.path)
-      warning("'path.in' not given; home folder'", home.path, "' used.")
-      path.in <- home.path
+      stop("Argument 'path.in' not given. Please specify one or use '~/' for your home folder.")
     }
     if (!dir.exists(path.in)) {
-      home.path <- getwd()
-      setwd(home.path)
-      warning("Folder given in 'path.in' does not exist; home folder\n  '", home.path, "' used.")
-      path.in <- home.path
-    } # Adds trailing '/' to path if missing
+      stop("Folder given in 'path.in' does not exist; please specify an existing one.")
+    }
+    path.in <- normalizePath(path.in, winslash = "/")
+    # Adds trailing '/' to path if missing
     path.in <- ifelse(regmatches(path.in, regexpr(".$", path.in)) == "/",
                       path.in, paste0(path.in, "/"))
   } # EO checking external data
   if (print | plot.bxp) { # check only if necessary
     if (missing(path.out)) {
-      home.path <- getwd()
-      setwd(home.path)
-      warning("'path.out' not given; output to home folder\n  '", home.path, "'.")
-      path.out <- home.path
+      stop("Argument 'path.out' not given. Please specify one or use '~/' for your home folder.")
     }
     if (is.null(path.out)) {
-      home.path <- getwd()
-      setwd(home.path)
-      warning("'path.out' not given; output to home folder\n  '", home.path, "'.")
-      path.out <- home.path
+      stop("Argument 'path.out' not given. Please specify one or use '~/' for your home folder.")
     }
     if (!dir.exists(path.out)) {
-      home.path <- getwd()
-      setwd(home.path)
-      warning("Folder given in 'path.out' does not exist; output to home folder\n  '", home.path, "'.")
-      path.out <- home.path
-    } # Adds trailing '/' to path if missing
+      stop("Folder given in 'path.out' does not exist; please specify an existing one.")
+    }
+    path.out <- normalizePath(path.out, winslash = "/")
+    # Adds trailing '/' to path if missing
     path.out <- ifelse(regmatches(path.out, regexpr(".$", path.out)) == "/",
                        path.out, paste0(path.out, "/"))
   } # EO print/plot checks
@@ -185,7 +173,7 @@ get.data <- function(path.in, path.out, file, set = "",
     }
   }
   if (print) res.file <- paste0(path.out, file, set, "_ABEL")
-  if (plot.bxp) png.path <- paste0(path.out, "/", file, set, "_boxplot.png")
+  if (plot.bxp) png.path <- paste0(path.out, file, set, "_boxplot.png")
   subjs  <- unique(data$subject)          # Subjects
   seqs   <- levels(unique(data$sequence)) # Sequences
   design <- info.design(seqs=seqs)        # fetch info

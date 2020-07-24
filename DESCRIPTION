@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Package: replicateBE
-Version: 1.0.14
-Date: 2020-04-08
+Version: 1.0.15
+Date: 2020-07-24
 Title: Average Bioequivalence with Expanding Limits (ABEL)
 Authors@R: c(person("Helmut", "Schütz",
                role = c("aut", "cre"),
@@ -34,6 +34,6 @@ VignetteBuilder: knitr
 URL: https://github.com/Helmut01/replicateBE
 BugReports: https://github.com/Helmut01/replicateBE/issues
 NeedsCompilation: no
-Packaged: 2020-04-08 12:57:33 UTC; HS
+Packaged: 2020-07-24 14:47:11 UTC; HS
 Repository: CRAN
-Date/Publication: 2020-04-09 08:40:02 UTC
+Date/Publication: 2020-07-24 19:10:02 UTC
