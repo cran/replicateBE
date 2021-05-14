@@ -259,8 +259,8 @@ If \code{ola = TRUE} and at least one studentized outlier was detected:
   equal [\emph{sic}] intra-subject variances of test and reference (like in
   \ifelse{html}{\out{2&times;2&times;2}}{\eqn{2 \times 2 \times 2}{2x2x2}}
   trials) -- even if proven false in one of the full replicate designs (were
-  \emph{both} \ifelse{html}{\out{CV<sub>wT</sub>}}{\eqn{CV_{wT}}{CVwT}} and
-  \ifelse{html}{\out{CV<sub>wR</sub>}}{\eqn{CV_{wR}}{CVwR}} can be estimated).
+  \emph{both} \ifelse{html}{\out{<em>CV</em><sub>wT</sub>}}{\eqn{CV_\textrm{wT}}{CVwT}} and
+  \ifelse{html}{\out{<em>CV</em><sub>wR</sub>}}{\eqn{CV_\textrm{wR}}{CVwR}} can be estimated).
   Hence, amongst biostatisticians it is called the \dQuote{crippled model}
   because the replicative nature of the study is ignored.\cr
   The method for calculating the degrees of freedom is not specified in the
@@ -282,12 +282,9 @@ If \code{ola = TRUE} and at least one studentized outlier was detected:
   agrees between \sQuote{Method A} and \sQuote{Method B}. However, for the
   highly incomplete dataset 14 \sQuote{Method A} was \emph{liberal} (passing
   by \acronym{ANOVA} but failing by the mixed effects model).\cr\cr
-  Reference-scaling is acceptable for
-  \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}} (immediate release
-  products) and \ifelse{html}{\out{C<sub>max,ss</sub>}}{\eqn{C_{max,ss}}},
-  \ifelse{html}{\out{C<sub>&tau;,ss</sub>}}{\eqn{C_{\tau,ss}}}, and
-  \ifelse{html}{\out{<sub>partial</sub>AUC}}{\eqn{_{partial}AUC}} (modified
-  release products). However, quoting the \acronym{BE} guideline:\cr
+  Reference-scaling is acceptable for \ifelse{html}{\out{<em>C</em><sub>max</sub>}}{\eqn{C_\textrm{max}}{Cmax}} (immediate release products) and \ifelse{html}{\out{<em>C</em><sub>max,ss</sub>}}{\eqn{C_\textrm{max,ss}}{Cmax,ss}},
+  \ifelse{html}{\out{<em>C</em><sub>&tau;,ss</sub>}}{\eqn{C_{\tau,ss}}{tau,ss}}, and
+  \ifelse{html}{\out{<sub>partial</sub><em>AUC</em>}}{\eqn{_\textrm{partial}AUC}{partialAUC}} (modified release products). However, quoting the \acronym{BE} guideline:\cr
     \cite{The applicant should justify that the calculated intra-subject
     variability is a reliable estimate and that it is not the result of
     outliers.}\cr
@@ -299,17 +296,17 @@ If \code{ola = TRUE} and at least one studentized outlier was detected:
     CV without this subject).\cr
     An outlier test is not an expectation of the medicines agencies but
     outliers could be shown by a box plot. This would allow the medicines
-    agencies to compare the data between them.  }\cr\cr
+    agencies to compare the data between them.}\cr\cr
   The \acronym{EMA}’s method of reference-scaling for highly
   variable drugs / drug products is currently recommended in other jurisdictions
   as well (\emph{e.g.}, the \acronym{WHO}; \acronym{ASEAN} States, Australia,
-  Brazil, Egypt, the Russian Federation, the Eurasian Economic Union,
-  the East African Community, New Zealand).\cr\cr
-  The \acronym{WHO} accepts reference-scaling for AUC (4-period full replicate
+  Brazil, Chile, Egypt, the Eurasian Economic Union, the East African Community,
+  New Zealand, the Russian Federation).\cr\cr
+  The \acronym{WHO} accepts reference-scaling for \ifelse{html}{\out{<em>AUC</em>}}{\eqn{AUC}{AUC}} (4-period full replicate
   studies are mandatory in order to assess the variability associated with each product).
   It is an open issue how this assessment should be done. In Population Bioequivalence (\acronym{PBE})
   and Individual Bioequivalence (\acronym{IBE}) the
-  \ifelse{html}{\out{<em>s<sub>wT</sub></em>}}{\eqn{s_{wT}}}/\ifelse{html}{\out{<em>s<sub>wR</sub></em>}}{\eqn{s_{wR}}}
+  \ifelse{html}{\out{<em>s</em><sub>wT</sub>}}{\eqn{s_\textrm{wT}}}/\ifelse{html}{\out{<em>s</em><sub>wR</sub>}}{\eqn{s_\textrm{wR}}{sWT/sWR}} ratio
   ratio was assessed and similar variability was concluded for a ratio
   within 0.667–1.500. However, the power of comparing variabilities
   in a study designed to demonstrate \acronym{ABE} is low. This was one of the
@@ -317,7 +314,7 @@ If \code{ola = TRUE} and at least one studentized outlier was detected:
   in regulatory practice. An alternative approach is given in the
   \acronym{FDA}’s guidance on warfarin. Variabilities are
   considered comparable if the upper confidence limit of
-  \ifelse{html}{\out{<em>&sigma;<sub>wT</sub></em>}}{\eqn{\sigma_{wT}}}/\ifelse{html}{\out{<em>&sigma;<sub>wR</sub></em>}}{\eqn{\sigma_{wR}}} is less than or equal to 2.5.
+  \ifelse{html}{\out{<em>&sigma;</em><sub>wT</sub>}}{\eqn{\sigma_\textrm{wT}}}/\ifelse{html}{\out{<em>&sigma;</em><sub>wR</sub>}}{\eqn{\sigma_\textrm{wR}}{sigmaT/sigmaR}} is less than or equal to 2.5.
 }
 
 \section{Disclaimer}{
@@ -359,10 +356,10 @@ Food and Drug Administration, Office of Generic Drugs. \emph{Draft Guidance on W
 # print to file.
 # Note: You must adapt the path-variables. The example reads from
 # the data provided by the library. Write-permissions must be granted
-# for 'path.out' in order to save the result file. Here to user's home
+# for 'path.out' in order to save the result file. Here to R's temporary
 # folder is used for simplicity.
 path.in <- paste0(find.package("replicateBE"), "/extdata/")
-method.B(path.in = path.in, path.out = "~/", file = "DS", set = "01", ext = "csv")
+method.B(path.in = path.in, path.out = tempdir(), file = "DS", set = "01", ext = "csv")
 # Should result in:
 #   CVwT               :  35.16\%
 #   swT                :   0.34138
@@ -375,9 +372,9 @@ method.B(path.in = path.in, path.out = "~/", file = "DS", set = "01", ext = "csv
 #   Point estimate     : 115.73\%              pass
 #   Mixed (CI & PE)    :                      pass
 #
-# Internal reference dataset 01 used and results to the home
+# Internal reference dataset 01 used and results to R's temporary
 # folder. Additional outlier-analyis and box plot saved as PNG.
-method.B(ola = TRUE, path.out = "~/", plot.bxp = TRUE, data = rds01)
+method.B(ola = TRUE, path.out = tempdir(), plot.bxp = TRUE, data = rds01)
 # Should give the same as above. Additionally:
 #   Recalculation due to presence of 2 outliers (subj. 45|52)
 #   CVwR (outl. excl.) :  32.16\% (reference-scaling applicable)

@@ -261,8 +261,8 @@ If \code{ola = TRUE} and at least one studentized outlier was detected:
   equal [\emph{sic}] intra-subject variances of test and reference (like in
   \ifelse{html}{\out{2&times;2&times;2}}{\eqn{2 \times 2 \times 2}{2x2x2}}
   trials) -- even if proven false in one of the full replicate designs (were
-  \emph{both} \ifelse{html}{\out{CV<sub>wT</sub>}}{\eqn{CV_{wT}}{CVwT}} and
-  \ifelse{html}{\out{CV<sub>wR</sub>}}{\eqn{CV_{wR}}{CVwR}} can be estimated).
+  \emph{both} \ifelse{html}{\out{<em>CV</em><sub>wT</sub>}}{\eqn{CV_\textrm{wT}}{CVwT}} and
+  \ifelse{html}{\out{<em>CV</em><sub>wR</sub>}}{\eqn{CV_\textrm{wR}}{CVwR}} can be estimated).
   Hence, amongst biostatisticians it is called the \dQuote{crippled model}
   because the replicative nature of the study is ignored.\cr
   The half-width of the \acronym{CI} in log-scale allows a comparison of
@@ -273,11 +273,9 @@ If \code{ola = TRUE} and at least one studentized outlier was detected:
   and \sQuote{Method B}. However, for the highly incomplete dataset 14
   \sQuote{Method A} was \emph{liberal} (passing by \acronym{ANOVA} but
   failing by the mixed effects model).\cr\cr
-  Reference-scaling is acceptable for \ifelse{html}{\out{C<sub>max</sub>}}{\eqn{C_{max}}}
-  (immediate release products) and \ifelse{html}{\out{C<sub>max,ss</sub>}}{\eqn{C_{max,ss}}},
-  \ifelse{html}{\out{C<sub>&tau;,ss</sub>}}{\eqn{C_{\tau,ss}}}, and
-  \ifelse{html}{\out{<sub>partial</sub>AUC}}{\eqn{_{partial}AUC}} (modified
-  release products). However, quoting the \acronym{BE} guideline:\cr
+  Reference-scaling is acceptable for \ifelse{html}{\out{<em>C</em><sub>max</sub>}}{\eqn{C_\textrm{max}}{Cmax}} (immediate release products) and \ifelse{html}{\out{<em>C</em><sub>max,ss</sub>}}{\eqn{C_\textrm{max,ss}}{Cmax,ss}},
+  \ifelse{html}{\out{<em>C</em><sub>&tau;,ss</sub>}}{\eqn{C_{\tau,ss}}{tau,ss}}, and
+  \ifelse{html}{\out{<sub>partial</sub><em>AUC</em>}}{\eqn{_\textrm{partial}AUC}{partialAUC}} (modified release products). However, quoting the \acronym{BE} guideline:\cr
     \cite{The applicant should justify that the calculated intra-subject
     variability is a reliable estimate and that it is not the result of
     outliers.}\cr
@@ -293,21 +291,21 @@ If \code{ola = TRUE} and at least one studentized outlier was detected:
   The \acronym{EMA}’s method of reference-scaling for highly
   variable drugs / drug products is currently recommended in other jurisdictions
   as well (\emph{e.g.}, the \acronym{WHO}; \acronym{ASEAN} States, Australia,
-  Brazil, Egypt, the Russian Federation, the Eurasian Economic Union,
-  the East African Community, New Zealand).\cr\cr
-  The \acronym{WHO} accepts reference-scaling for AUC (4-period full replicate
+  Brazil, Chile, Egypt, the Eurasian Economic Union, the East African Community,
+  New Zealand, the Russian Federation).\cr\cr
+  The \acronym{WHO} accepts reference-scaling for \ifelse{html}{\out{<em>AUC</em>}}{\eqn{AUC}{AUC}} (4-period full replicate
   studies are mandatory in order to assess the variability associated with each product).
   It is an open issue how this assessment should be done. In Population Bioequivalence (\acronym{PBE})
   and Individual Bioequivalence (\acronym{IBE}) the
-  \ifelse{html}{\out{<em>s<sub>wT</sub></em>}}{\eqn{s_{wT}}}/\ifelse{html}{\out{<em>s<sub>wR</sub></em>}}{\eqn{s_{wR}}}
-  ratio was assessed and similar variability was concluded for a ratio
-  within 0.667–1.500. However, the power of comparing variabilities
-  in a study designed to demonstrate \acronym{ABE} is low. This was one of the
-  reasons why \acronym{PBE} and \acronym{IBE} were not implemented
-  in regulatory practice. An alternative approach is given in the
+  \ifelse{html}{\out{<em>s</em><sub>wT</sub>}}{\eqn{s_\textrm{wT}}}/\ifelse{html}{\out{<em>s</em><sub>wR</sub>}}{\eqn{s_\textrm{wR}}{sWT/sWR}} ratio was assessed and similar
+  variability was concluded for a ratio within 0.667–1.500. However, the power
+  of comparing variabilitiesin a study designed to demonstrate \acronym{ABE}
+  is low. This was one of the reasons why \acronym{PBE} and \acronym{IBE} were
+  not implemented in regulatory practice. An alternative approach is given in the
   \acronym{FDA}’s guidance on warfarin. Variabilities are
   considered comparable if the upper confidence limit of
-  \ifelse{html}{\out{<em>&sigma;<sub>wT</sub></em>}}{\eqn{\sigma_{wT}}}/\ifelse{html}{\out{<em>&sigma;<sub>wR</sub></em>}}{\eqn{\sigma_{wR}}} is less than or equal to 2.5.
+  \ifelse{html}{\out{<em>&sigma;</em><sub>wT</sub>}}{\eqn{\sigma_\textrm{wT}}}/\ifelse{html}{\out{<em>&sigma;</em><sub>wR</sub>}}{\eqn{\sigma_\textrm{wR}}{sigmaT/sigmaR}} is less
+  than or equal to 2.5.
 }
 
 \section{Disclaimer}{
@@ -349,11 +347,12 @@ Labes D, \enc{Schütz}{Schuetz} H. \emph{Inflation of Type I Error in the Evalua
 # print to file.
 # Note: You must adapt the path-variables. The example reads from
 # the data provided by the library. Write-permissions must be granted
-# for 'path.out' in order to save the result file. Here to user's home
-# folder is used for simplicity.
+# for 'path.out' in order to save the result file. Here R's
+# temporary folder is used.
 \donttest{
 path.in  <- paste0(find.package("replicateBE"), "/extdata/")
-method.A(path.in = path.in, path.out = "~/", file = "DS", set = "01", ext = "csv")
+method.A(path.in = path.in, path.out = tempdir(), file = "DS",
+set = "01", ext = "csv")
 # Should result in:
 #   CVwT               :  35.16\%
 #   swT                :   0.34138
@@ -366,9 +365,9 @@ method.A(path.in = path.in, path.out = "~/", file = "DS", set = "01", ext = "csv
 #   Point estimate     : 115.66\%              pass
 #   Mixed (CI & PE)    :                      pass
 #
-# Internal reference dataset 01 used and results to the home
-# folder. Additional outlier-analyis.
-method.A(ola = TRUE, path.out = "~/", data = rds01)
+# Internal reference dataset 01 used and results to R's
+# temporary folder. Additional outlier-analyis.
+method.A(ola = TRUE, path.out = tempdir(), data = rds01)
 # Should give the same as above. Additionally:
 #   Outlier fence      :  2×IQR of studentized residuals.
 #   Recalculation due to presence of 2 outliers (subj. 45|52)
@@ -390,7 +389,7 @@ print(x, row.names = FALSE)
 # Assess the Type I Error and iteratively adjust alpha if necessary.
 # Not run: due to timing policy of CRAN for examples
 \donttest{
-method.A(adjust = TRUE, path.out = "~/", data = rds01)}
+method.A(adjust = TRUE, path.out = tempdir(), data = rds01)}
 # Should give in the result file:
 #   Assessment of the empiric Type I Error (TIE); 1,000,000 studies simulated.
 #     TIE not > nominal 0.05; consumer risk is controlled.
@@ -398,7 +397,7 @@ method.A(adjust = TRUE, path.out = "~/", data = rds01)}
 # Same with recalculation based on outliers, iteratively adjust alpha
 # if necessary
 \donttest{
-method.A(ola = TRUE, path.out = "~/", adjust = TRUE, data = rds01)}
+method.A(ola = TRUE, path.out = tempdir(), adjust = TRUE, data = rds01)}
 # Should give in the result file:
 #   Assessment of the empiric Type I Error (TIE) based on original CVwR;
 #   1,000,000 studies simulated.
@@ -410,7 +409,8 @@ method.A(ola = TRUE, path.out = "~/", adjust = TRUE, data = rds01)}
 #
 # Repeat the evaluation with the adjusted alpha.
 \donttest{
-method.A(alpha = 0.033416, path.out = "~/", ola = TRUE, adjust = TRUE, data = rds01)}
+method.A(alpha = 0.033416, path.out = tempdir(), ola = TRUE,
+         adjust = TRUE, data = rds01)}
 # Should give in the result file:
 #   alpha              :   0.033416 (93.3168\% CI)
 #   Confidence interval: 106.16\% ... 126.00\%  pass

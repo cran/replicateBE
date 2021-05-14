@@ -7,31 +7,43 @@ knitr::opts_chunk$set(
 ## ----setup--------------------------------------------------------------------
 library(replicateBE) # attach the library
 
+## ---- echo=FALSE--------------------------------------------------------------
+pub <- packageDate("replicateBE", date.fields = "Date/Publication")
+txt <- paste0("Version ", packageVersion("replicateBE"), " built ",
+         packageDate("replicateBE", date.fields = "Built"),
+         " with R ", substr(packageDescription("replicateBE", fields = "Built"), 3, 7))
+if (is.na(pub)) {
+  txt <- paste(txt, "\n(development version not on CRAN).")
+} else {
+  txt <- paste0(txt, "\n(stable release on CRAN ", pub, ").")
+}
+cat(txt)
+
 ## ----eval=FALSE---------------------------------------------------------------
 #  modA <- lm(log(PK) ~ sequence + subject%in%sequence + period + treatment,
 #                       data = data)
 
-## ----eval=FALSE---------------------------------------------------------------
+## ----show_mod1, eval = FALSE--------------------------------------------------
 #  modB <- lmer(log(PK) ~ sequence + period + treatment + (1|subject),
 #                         data = data)
 
-## ----eval=FALSE---------------------------------------------------------------
+## ----show_mod2, eval = FALSE--------------------------------------------------
 #  modB <- lme(log(PK) ~ sequence +  period + treatment, random = ~1|subject,
 #                        data = data)
 
-## ----eval=FALSE---------------------------------------------------------------
+## ----show_mod3, eval = FALSE--------------------------------------------------
 #  modB <- lmer(log(PK) ~ sequence + period + treatment + (1|subject),
 #                         data = data)
 
-## ----eval=FALSE---------------------------------------------------------------
+## ----help, eval = FALSE-------------------------------------------------------
 #  help("data", package = "replicateBE")
 #  ?replicateBE::data
 
-## ----eval=FALSE---------------------------------------------------------------
+## ----mod_CV, eval = FALSE-----------------------------------------------------
 #  modCV <- lm(log(PK) ~ sequence + subject%in%sequence + period,
 #                        data = data[data$treatment = "R", ])
 
-## -----------------------------------------------------------------------------
+## ----expl1--------------------------------------------------------------------
 # Estimate sample sizes of full replicate designs (theta0 0.90, target
 # power 0.80) and CI of the CV with library PowerTOST
 CV <- 0.30
@@ -46,7 +58,7 @@ round(100*PowerTOST::CVCL(CV = CV, df = 2*n3-3, "2-sided"), 2) # 3-period
 round(100*PowerTOST::CVCL(CV = CV, df = 3*24-4, "2-sided"), 2) # 4-period
 round(100*PowerTOST::CVCL(CV = CV, df = 2*24-3, "2-sided"), 2) # 3-period
 
-## -----------------------------------------------------------------------------
+## ----expl2--------------------------------------------------------------------
 # Calculate limits with library PowerTOST
 CV <- c(30, 40, 49.6, 50, 50.4)
 df <- data.frame(CV = CV, L = NA, U = NA, cap = "",
@@ -59,8 +71,8 @@ df$cap[df$CV >= 50] <- "upper"
 names(df)[1:3] <- c("CV(%)", "L(%)", "U(%)")
 print(df, row.names = FALSE)
 
-## -----------------------------------------------------------------------------
-# Compare Method B acc. to the GL with Method A for all reference datasets.
+## ----expl3--------------------------------------------------------------------
+# Compare Method B acc. to the GL with Method A for all reference data sets.
 ds <- substr(grep("rds", unname(unlist(data(package = "replicateBE"))),
                   value = TRUE), start = 1, stop = 5)
 for (i in seq_along(ds)) {
@@ -79,7 +91,7 @@ for (i in seq_along(ds)) {
   }
 }
 
-## -----------------------------------------------------------------------------
+## ----expl4--------------------------------------------------------------------
 A  <- method.A(print = FALSE, details = TRUE, data = rds14)
 B1 <- method.B(print = FALSE, details = TRUE, data = rds14, option = 1)
 B2 <- method.B(print = FALSE, details = TRUE, data = rds14) # apply default option
@@ -97,7 +109,7 @@ df[, c(2, 11)] <- signif(df[, c(2, 11)], 5)
 print(df[order(df$BE, df$hw, decreasing = c(FALSE, TRUE)), ],
       row.names = FALSE)
 
-## -----------------------------------------------------------------------------
+## ----expl5--------------------------------------------------------------------
 ### Compare different types with some random data
 x <- rnorm(48)
 p <- c(25, 50, 75)/100

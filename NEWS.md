@@ -1,6 +1,15 @@
+# replicateBE 1.0.16
+
+Submitted to CRAN 2021-05-14
+
+## Minor changes
+
+  * `path.out` in examples changed from `"~/"` to `tempdir()`. CRAN policy violation noted by B. Ripley.
+  * `method.B.R`: `options(contrasts = c("contr.treatment", "contr.poly"))` is the default. If a user has set other ones, restore them on exit.
+
 # replicateBE 1.0.15
 
-Published on Github 2020-07-24 and submitted to CRAN.
+Published on Github 2020-07-24, on CRAN.
 
 ## Major changes
 
