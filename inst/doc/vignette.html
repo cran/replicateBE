@@ -14,16 +14,19 @@
 
 <title>replicateBE</title>
 
-<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
-// be compatible with the behavior of Pandoc < 2.8).
-document.addEventListener('DOMContentLoaded', function(e) {
-  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
-  var i, h, a;
-  for (i = 0; i < hs.length; i++) {
-    h = hs[i];
-    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
-    a = h.attributes;
-    while (a.length > 0) h.removeAttribute(a[0].name);
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
   }
 });
 </script>
@@ -47,18 +50,19 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 </style>
 <style type="text/css" data-origin="pandoc">
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -78,7 +82,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -155,27 +159,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="TOC">
 <ul>
 <li><a href="#intro">Introduction</a></li>
-<li><a href="#methods">Functions</a>
-<ul>
-<li><a href="#method.a"><code id="methodA">method.A()</code></a></li>
-<li><a href="#method.b"><code id="methodB">method.B()</code></a></li>
-<li><a href="#abe"><code id="ABE">ABE()</code></a></li>
+<li><a href="#methods">Functions</a><ul>
+<li><a href="#methodA">method.A()</a></li>
+<li><a href="#methodB">method.B()</a></li>
+<li><a href="#ABE">ABE()</a></li>
 </ul></li>
 <li><a href="#hypotheses">Hypotheses</a></li>
-<li><a href="#designs">Tested designs</a>
-<ul>
+<li><a href="#designs">Tested designs</a><ul>
 <li><a href="#per4_full">Four period (full) replicates</a></li>
 <li><a href="#per3_full">Three period (full) replicates</a></li>
 <li><a href="#per2_full">Two period (full) replicate</a></li>
 <li><a href="#per3_part">Three period (partial) replicates</a></li>
 </ul></li>
-<li><a href="#data_struct">Data structure</a>
-<ul>
+<li><a href="#data_struct">Data structure</a><ul>
 <li><a href="#fmt">Format</a></li>
 <li><a href="#incomplete">Incomplete data</a></li>
 </ul></li>
-<li><a href="#notes">Notes on the methods</a>
-<ul>
+<li><a href="#notes">Notes on the methods</a><ul>
 <li><a href="#cv">Estimation of intra-subject variability</a></li>
 <li><a href="#model_struc">Model structure</a></li>
 <li><a href="#BElim">BE limits, PE restriction, rounding issues</a></li>
@@ -194,45 +194,46 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="top">
 <a class="toplink" href="#" title="▲ top"> </a>
 </div>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(replicateBE) <span class="co"># attach the library</span></span></code></pre></div>
-<pre><code># Version 1.0.17 built 2021-05-13 with R 4.0.5 
-# (development version not on CRAN).</code></pre>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(replicateBE) <span class="co"># attach the library</span></span></code></pre></div>
+<pre><code># Version 1.1.0 built 2021-06-21 with R 4.1.0
+# (stable release on CRAN NA).</code></pre>
 <div id="intro" class="section level1">
 <h1>Introduction</h1>
 <p>The library provides datasets (internal <code>.rda</code> and in <abbr title="Character Separated Variables">CSV</abbr>-format in <code>/extdata/</code>) which support users in a <a href="https://en.wikipedia.org/wiki/Black-box_testing">black-box</a> performance qualification (PQ) of their software installations.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Users can analyze data imported from <abbr title="Character Separated Variables">CSV</abbr>- and Excel-files.</p>
-<p>The methods given by the European Medicines Agency (EMA) in Annex I<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> for reference-scaling according to the Guideline on the Investigation of Bioequivalence<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> are implemented. Potential influence of outliers on the variability of the reference can be assessed by box plots of studentized and standardized residuals as suggested at a joint <abbr title="European Generic Medicines Association">EGA</abbr>/<abbr title="European Medicines Agency">EMA</abbr> symposium.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a></p>
+<p>The methods<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> given by the European Medicines Agency (EMA) for reference-scaling according to the Guideline on the Investigation of Bioequivalence<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> are implemented. Health Canada’s approach<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> – requiring a mixed-effects model – is approximated by intra-subject contrasts. Direct widening of the limits for <em>C</em><sub>max</sub> (as a special case of <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>) recommended by the <abbr title="Gulf Cooperation Council: Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, the United Arab Emirates.">GCC</abbr><a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> is supported as well.</p>
+<p>Potential influence of outliers on the variability of the reference can be assessed by box plots of studentized and standardized residuals as suggested at a joint <abbr title="European Generic Medicines Association">EGA</abbr>/<abbr title="European Medicines Agency">EMA</abbr> symposium.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a></p>
 </div>
 <div id="methods" class="section level1">
 <h1>Functions</h1>
-<div id="method.a" class="section level2">
-<h2><code id="methodA">method.A()</code></h2>
+<div id="methodA" class="section level2">
+<h2>method.A()</h2>
 <p>A linear model of log-transformed <abbr title="pharmacokinetic">PK</abbr> responses and effects<br />
-    <em>sequence</em>, <em>subject(sequence)</em>, <em>period</em>, <em>treatment</em><br />
-where all effects are fixed (<em>i.e.</em>, <abbr title="Analysis of Variance">ANOVA</abbr>). Estimated via function <code>lm()</code> of library <code>stats</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>modA &lt;-<span class="st"> </span><span class="kw">lm</span>(<span class="kw">log</span>(PK) <span class="op">~</span><span class="st"> </span>sequence <span class="op">+</span><span class="st"> </span>subject<span class="op">%in%</span>sequence <span class="op">+</span><span class="st"> </span>period <span class="op">+</span><span class="st"> </span>treatment,</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>                     <span class="dt">data =</span> data)</span></code></pre></div>
+    <em>sequence</em>, <em>subject</em>(<em>sequence</em>), <em>period</em>, <em>treatment</em><br />
+where all effects are fixed (<em>i.e.</em>, evaluated by an <abbr title="Analysis of Variance">ANOVA</abbr>). Estimated via function <code>lm()</code> of library <code>stats</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>modA &lt;-<span class="st"> </span><span class="kw">lm</span>(<span class="kw">log</span>(PK) <span class="op">~</span><span class="st"> </span>sequence <span class="op">+</span><span class="st"> </span>subject<span class="op">%in%</span>sequence <span class="op">+</span><span class="st"> </span>period <span class="op">+</span><span class="st"> </span>treatment,</span>
+<span id="cb3-2"><a href="#cb3-2"></a>                     <span class="dt">data =</span> data)</span></code></pre></div>
 </div>
-<div id="method.b" class="section level2">
-<h2><code id="methodB">method.B()</code></h2>
+<div id="methodB" class="section level2">
+<h2>method.B()</h2>
 <p>A linear model of log-transformed <abbr title="pharmacokinetic">PK</abbr> responses and effects<br />
-    <em>sequence</em>, <em>subject(sequence)</em>, <em>period</em>, <em>treatment</em><br />
-where <em>subject(sequence)</em> is a random effect and all others are fixed.<br />
+    <em>sequence</em>, <em>subject</em>(<em>sequence</em>), <em>period</em>, <em>treatment</em><br />
+where <em>subject</em>(<em>sequence</em>) is a random effect and all others are fixed.<br />
 </p>
 <p>Three options are provided</p>
 <ol class="example" style="list-style-type: decimal">
 <li>Estimated via function <code>lmer()</code> of library <code>lmerTest</code>.</li>
 </ol>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>modB &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="kw">log</span>(PK) <span class="op">~</span><span class="st"> </span>sequence <span class="op">+</span><span class="st"> </span>period <span class="op">+</span><span class="st"> </span>treatment <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>subject),</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>                       <span class="dt">data =</span> data)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>modB &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="kw">log</span>(PK) <span class="op">~</span><span class="st"> </span>sequence <span class="op">+</span><span class="st"> </span>period <span class="op">+</span><span class="st"> </span>treatment <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>subject),</span>
+<span id="cb4-2"><a href="#cb4-2"></a>                       <span class="dt">data =</span> data)</span></code></pre></div>
 <ul>
-<li>Employs Satterthwaite’s approximation<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> of the degrees of freedom <code>method.B(..., option = 1)</code>, which is equivalent to SAS’ <code>DDFM=SATTERTHWAITE</code>, Phoenix WinNonlin’s <code>Degrees of Freedom Satterthwaite</code>, and Stata’s <code>dfm=Satterthwaite</code>.</li>
+<li>Employs Satterthwaite’s approximation<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a> of the degrees of freedom <code>method.B(..., option = 1)</code>, which is equivalent to SAS’ <code>DDFM=SATTERTHWAITE</code>, Phoenix WinNonlin’s <code>Degrees of Freedom Satterthwaite</code>, and Stata’s <code>dfm=Satterthwaite</code>.</li>
 <li>Note that this is the only available approximation in SPSS.</li>
 </ul>
 <ol start="2" class="example" style="list-style-type: decimal">
 <li>Estimated via function <code>lme()</code> of library <code>nlme</code>.</li>
 </ol>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>modB &lt;-<span class="st"> </span><span class="kw">lme</span>(<span class="kw">log</span>(PK) <span class="op">~</span><span class="st"> </span>sequence <span class="op">+</span><span class="st">  </span>period <span class="op">+</span><span class="st"> </span>treatment, <span class="dt">random =</span> <span class="op">~</span><span class="dv">1</span><span class="op">|</span>subject,</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>                      <span class="dt">data =</span> data)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>modB &lt;-<span class="st"> </span><span class="kw">lme</span>(<span class="kw">log</span>(PK) <span class="op">~</span><span class="st"> </span>sequence <span class="op">+</span><span class="st">  </span>period <span class="op">+</span><span class="st"> </span>treatment, <span class="dt">random =</span> <span class="op">~</span><span class="dv">1</span><span class="op">|</span>subject,</span>
+<span id="cb5-2"><a href="#cb5-2"></a>                      <span class="dt">data =</span> data)</span></code></pre></div>
 <ul>
 <li>Employs degrees of freedom equivalent to SAS’ <code>DDFM=CONTAIN</code> (implicitly preferred by the <abbr title="European Medicines Agency">EMA</abbr>), Phoenix WinNonlin’s <code>Degrees of Freedom Residual</code>, STATISTICA’s <code>GLM containment</code>, and Stata’s <code>dfm=anova</code>.</li>
 <li>To comply with the <abbr title="European Medicines Agency">EMA</abbr>’s <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document, <code>method.B(..., option = 2)</code> is the default (<em>i.e.</em>, if the argument <code>option</code> is missing).</li>
@@ -240,27 +241,27 @@ where <em>subject(sequence)</em> is a random effect and all others are fixed.<br
 <ol start="3" class="example" style="list-style-type: decimal">
 <li>Estimated via function <code>lmer()</code> of library <code>lmerTest</code>.</li>
 </ol>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>modB &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="kw">log</span>(PK) <span class="op">~</span><span class="st"> </span>sequence <span class="op">+</span><span class="st"> </span>period <span class="op">+</span><span class="st"> </span>treatment <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>subject),</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>                       <span class="dt">data =</span> data)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>modB &lt;-<span class="st"> </span><span class="kw">lmer</span>(<span class="kw">log</span>(PK) <span class="op">~</span><span class="st"> </span>sequence <span class="op">+</span><span class="st"> </span>period <span class="op">+</span><span class="st"> </span>treatment <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>subject),</span>
+<span id="cb6-2"><a href="#cb6-2"></a>                       <span class="dt">data =</span> data)</span></code></pre></div>
 <ul>
-<li>Employs the Kenward-Roger approximation<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a> of the degrees of freedom <code>method.B(..., option = 3)</code>, which is equivalent to Stata’s <code>dfm=Kenward Roger (EIM)</code> and SAS’ <code>DDFM=KENWARDROGER(FIRSTORDER)</code>, <em>i.e.</em>, based on the <em>expected</em> information matrix.</li>
-<li>Note that SAS with <code>DDFM=KENWARDROGER</code> and JMP calculate Satterthwaite’s [<em>sic</em>] degrees of freedom and apply the Kackar-Harville correction<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a> <em>i.e.</em>, based on the <em>observed</em> information matrix.</li>
+<li>Employs the Kenward-Roger approximation<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a> of the degrees of freedom <code>method.B(..., option = 3)</code>, which is equivalent to Stata’s <code>dfm=Kenward Roger (EIM)</code> and SAS’ <code>DDFM=KENWARDROGER(FIRSTORDER)</code>, <em>i.e.</em>, based on the <em>expected</em> information matrix.</li>
+<li>Note that SAS with <code>DDFM=KENWARDROGER</code> and JMP calculate Satterthwaite’s [<em>sic</em>] degrees of freedom and apply the Kackar-Harville correction<a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a> <em>i.e.</em>, based on the <em>observed</em> information matrix.</li>
 </ul>
 </div>
-<div id="abe" class="section level2">
-<h2><code id="ABE">ABE()</code></h2>
-<p>Average Bioequivalence, where the model is identical to <a href="#methodA">Method A</a>. By default the conventional acceptance range of 80.00 – 125.00% is used. Tighter limits (90.00 – 111.11%) for narrow therapeutic index drugs (<abbr title="European Medicines Agency">EMA</abbr>) or wider limits (75.00 – 133.33% for <em>C</em><sub>max</sub> according to the guidelines of the <abbr title="Gulf Cooperation Council: Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, the United Arab Emirates.">GCC</abbr> and South Africa) can be specified by the arguments <code>theta1</code> (lower limit) and/or <code>theta2</code> (upper limit).</p>
+<div id="ABE" class="section level2">
+<h2>ABE()</h2>
+<p>Average Bioequivalence, where the model is identical to <a href="#methodA">Method A</a>. By default the conventional acceptance range of 80.00 – 125.00% is used. Tighter limits (90.00 – 111.11%) for narrow therapeutic index drugs (<abbr title="European Medicines Agency">EMA</abbr> and others) or wider limits (75.00 – 133.33% for <em>C</em><sub>max</sub> according to the guideline of South Africa<a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a>) can be specified by the arguments <code>theta1</code> (lower limit) and/or <code>theta2</code> (upper limit).</p>
 </div>
 </div>
 <div id="hypotheses" class="section level1">
 <h1>Hypotheses</h1>
-<p>The hypotheses are <span class="math display">\[\small{H_{0}:\theta_0\ni \left\{L,U\right\}\:vs\:H_{1}:L&lt;\theta_0&lt;U}\]</span> where <span class="math inline">\(\small{\theta_0=\mu_\textrm{T}/\mu_\textrm{R}}\)</span> and the null hypothesis is <strong>in</strong>equivalence. In Average Bioequivalence (ABE) the limits <span class="math inline">\(\small{\left\{L,U\right\}}\)</span> are fixed, whereas in <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr> they can be <a href="#BElim">expanded</a> based on the within-subject variability of the reference treatment.</p>
+<p>The hypotheses are <span class="math display">\[\small{H_{0}:\theta_0\ni \left\{L,U\right\}\:vs\:H_{1}:L&lt;\theta_0&lt;U}\]</span> where <span class="math inline">\(\small{\theta_0=\mu_\textrm{T}/\mu_\textrm{R}}\)</span> and the null hypothesis is <strong>in</strong>equivalence. In Average Bioequivalence (ABE) the limits <span class="math inline">\(\small{\left\{L,U\right\}}\)</span> are <em>fixed</em>, whereas in <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr> they can be <a href="#BElim"><em>expanded</em></a> based on the within-subject variability of the reference treatment.</p>
 </div>
 <div id="designs" class="section level1">
 <h1>Tested designs</h1>
 <p>Details about the reference datasets and their designs:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">help</span>(<span class="st">&quot;data&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;replicateBE&quot;</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>?replicateBE<span class="op">::</span>data</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">help</span>(<span class="st">&quot;data&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;replicateBE&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2"></a>?replicateBE<span class="op">::</span>data</span></code></pre></div>
 <div id="per4_full" class="section level2">
 <h2>Four period (full) replicates</h2>
 <p>Both the test and the reference treatments are administered at least once.</p>
@@ -286,25 +287,25 @@ where <em>subject(sequence)</em> is a random effect and all others are fixed.<br
 <h2>Two period (full) replicate</h2>
 <p>The test and reference treatments are administered once to ½ of the subjects (for the estimation of the <abbr title="Confidence Interval">CI</abbr>), <em>i.e.</em>, the first group of subjects follows a conventional <abbr title="2-treatment 2-sequence 2-period crossover">2×2×2</abbr> trial. In the second group the test and reference treatments are administered at least once to ¼ of the subjects, respectively (for the estimation of <em>CV</em><sub>wT</sub> and <em>CV</em><sub>wR</sub>).</p>
 <p><code>TR | RT | TT | RR</code></p>
-<p>Although supported, Balaam’s design<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a> is <em>not recommended</em> due to its poor power characteristics.</p>
+<p>Although supported, Balaam’s design<a href="#fn11" class="footnote-ref" id="fnref11"><sup>11</sup></a> is <em>not recommended</em> due to its poor power characteristics.</p>
 </div>
 <div id="per3_part" class="section level2">
 <h2>Three period (partial) replicates</h2>
 <p>The test treatment is administered once and the reference treatment at least once.</p>
 <p><code>TRR | RTR | RRT</code><br />
 <code>TRR | RTR</code></p>
-<p>The latter is the so-called extra-reference design<a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a> which is <em>not recommended</em> since it is biased in the presence of period effects.</p>
+<p>The latter is the so-called extra-reference design<a href="#fn12" class="footnote-ref" id="fnref12"><sup>12</sup></a> which is <em>not recommended</em> since it is biased in the presence of period effects.</p>
 </div>
 </div>
 <div id="data_struct" class="section level1">
 <h1>Data structure</h1>
-<p>Columns must have the headers <code>subject</code>, <code>period</code>, <code>sequence</code>, <code>treatment</code>, <code>PK</code>, and/or <code>logPK</code>.<a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a> Any order of columns is acceptable. Uppercase and mixed case headers will be internally converted to lowercase headers.</p>
+<p>Columns must have the headers <code>subject</code>, <code>period</code>, <code>sequence</code>, <code>treatment</code>, <code>PK</code>, and/or <code>logPK</code>.<a href="#fn13" class="footnote-ref" id="fnref13"><sup>13</sup></a> Any order of columns is acceptable. Uppercase and mixed case headers will be internally converted to lowercase headers.</p>
 <div id="fmt" class="section level2">
 <h2>Format</h2>
 <table>
 <colgroup>
-<col width="16%" />
-<col width="83%" />
+<col width="16%"></col>
+<col width="83%"></col>
 </colgroup>
 <thead>
 <tr class="header">
@@ -339,13 +340,13 @@ where <em>subject(sequence)</em> is a random effect and all others are fixed.<br
 </tr>
 </tbody>
 </table>
-<p>Relevant data are used for the estimation of <em>CV</em><sub>wR</sub> (and <em>CV</em><sub>wT</sub> in full replicate designs) and BE, <em>i.e.</em>, the data­sets might be different (see the <a href="#setexpl">example below</a>). It is good practice to state that in the Statistical Analysis Plan (SAP).</p>
+<p>Relevant data are used for the estimation of <em>CV</em><sub>wR</sub> (and <em>CV</em><sub>wT</sub> in full replicate designs) and BE, <em>i.e.</em>, the data­sets might be different (see the <a href="#setexpl">example below</a>). It is good practice to state that in the Statistical Analysis Plan.</p>
 </div>
 <div id="incomplete" class="section level2">
 <h2>Incomplete data</h2>
 <div id="setCW" class="section level3">
 <h3>Estimation of <em>CV</em><sub>w</sub></h3>
-<p>If a subject drops out from the study in a higher period, data of repeated administrations will still be used for the estimation of <em>CV</em><sub>w</sub>, although data of the other treatment might be missing. Examples for the estimation of <em>CV</em><sub>wR</sub> (missings denoted by <code>·</code>):<br />
+<p>If a subject drops out from the study in a higher period, data of repeated administrations will still be used for the estimation of <em>CV</em><sub>w</sub>, although data of the other treatment might be missing. Examples for the estimation of <em>CV</em><sub>wR</sub> (missing values are denoted by <code>·</code>):<br />
 </p>
 <p><code>RTRT</code> | <code>RTR·</code><br />
 <code>TRRT</code> | <code>TRR·</code><br />
@@ -355,7 +356,7 @@ where <em>subject(sequence)</em> is a random effect and all others are fixed.<br
 </div>
 <div id="setBE" class="section level3">
 <h3>Assessment of BE</h3>
-<p>If a subject drops out from the study in a higher period, data with at least one administration of the Test and Reference will be used in the assessment of BE. Examples (missings denoted by <code>·</code>):<br />
+<p>If a subject drops out from the study in a higher period, data with at least one administration of the Test and Reference will be used in the assessment of BE. Examples (missing values are denoted by <code>·</code>):<br />
 </p>
 <p><code>TRTR</code> | <code>TRT·</code> or | <code>TR··</code><br />
 <code>RTRT</code> | <code>RTR·</code> or | <code>RT··</code><br />
@@ -417,51 +418,88 @@ where <em>subject(sequence)</em> is a random effect and all others are fixed.<br
 <div id="cv" class="section level2">
 <h2>Estimation of intra-subject variability</h2>
 <p>The <abbr title="European Medicines Agency">EMA</abbr> proposed a linear model of log-transformed <abbr title="pharmacokinetic">PK</abbr> responses of the reference treatment<br />
-    <em>sequence</em>, <em>subject(sequence)</em>, <em>period</em><br />
+    <em>sequence</em>, <em>subject</em>(<em>sequence</em>), <em>period</em><br />
 where all effects are fixed. Estimated via function <code>lm()</code> of library <code>stats</code>:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>modCV &lt;-<span class="st"> </span><span class="kw">lm</span>(<span class="kw">log</span>(PK) <span class="op">~</span><span class="st"> </span>sequence <span class="op">+</span><span class="st"> </span>subject<span class="op">%in%</span>sequence <span class="op">+</span><span class="st"> </span>period,</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>                      <span class="dt">data =</span> data[data<span class="op">$</span><span class="dt">treatment =</span> <span class="st">&quot;R&quot;</span>, ])</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>modCV &lt;-<span class="st"> </span><span class="kw">lm</span>(<span class="kw">log</span>(PK) <span class="op">~</span><span class="st"> </span>sequence <span class="op">+</span><span class="st"> </span>subject<span class="op">%in%</span>sequence <span class="op">+</span><span class="st"> </span>period,</span>
+<span id="cb8-2"><a href="#cb8-2"></a>                      <span class="dt">data =</span> data[data<span class="op">$</span><span class="dt">treatment =</span> <span class="st">&quot;R&quot;</span>, ])</span></code></pre></div>
 <p>In full replicate designs (required by the <abbr title="World Health Organization">WHO</abbr> for reference-scaling of <em>AUC</em>; see <a href="#app_out">below</a>) the same model is run with <code>data = data[data$treatment = &quot;T&quot;, ]</code>.</p>
 <p>Special conditions for the sample size in three period full replicate designs:</p>
 <blockquote>
 <p><em>The question raised asks if it is possible to use a design where subjects are randomised to receive treatments in the order of TRT or RTR.</em></p>
 <p><em>The <abbr title="Committee for Medicinal Products for Human Use">CHMP</abbr> bioequivalence guideline requires that at least 12 patients are needed to provide data for a bioequivalence study to be considered valid, and to estimate all the key parameters. Therefore, if a 3-period replicate design, where treatments are given in the order TRT or RTR, is to be used to justify widening of a confidence interval for C<sub>max</sub> then it is considered that at least 12 patients would need to provide data from the RTR arm. This implies a study with at least 24 patients in total would be required if equal number of subjects are allocated to the 2 treatment sequences.</em></p>
-<p>— <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document<a href="#fn11" class="footnote-ref" id="fnref11"><sup>11</sup></a></p>
+<p>— <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document<a href="#fn14" class="footnote-ref" id="fnref14"><sup>14</sup></a></p>
 </blockquote>
-<p>If less than twelve subjects are eligible in sequence <code>RTR</code> of a <code>TRT | RTR</code> design (and in analogy in sequence <code>TRR</code> of a <code>TRR | RTT</code> design), the user is notified about the ‘uncertain’ estimate of <em>CV</em><sub>wR</sub>. However, in a sufficiently powered study such a case is <a href="https://forum.bebac.at/forum_entry.php?id=15139" title="BEBA Forum, 23 July 2015">extremely unlikely</a>. Let us explore the confidence interval of the <em>CV</em>:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="co"># Estimate sample sizes of full replicate designs (theta0 0.90, target</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a><span class="co"># power 0.80) and CI of the CV with library PowerTOST</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>CV &lt;-<span class="st"> </span><span class="fl">0.30</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>n4 &lt;-<span class="st"> </span>PowerTOST<span class="op">::</span><span class="kw">sampleN.scABEL</span>(<span class="dt">CV =</span> CV, <span class="dt">design =</span> <span class="st">&quot;2x2x4&quot;</span>, <span class="dt">details =</span> <span class="ot">FALSE</span>,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a>                                <span class="dt">print =</span> <span class="ot">FALSE</span>)[[<span class="st">&quot;Sample size&quot;</span>]] <span class="co"># 4-period</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a>n3 &lt;-<span class="st"> </span>PowerTOST<span class="op">::</span><span class="kw">sampleN.scABEL</span>(<span class="dt">CV =</span> CV, <span class="dt">design =</span> <span class="st">&quot;2x2x3&quot;</span>, <span class="dt">details =</span> <span class="ot">FALSE</span>,</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a>                                <span class="dt">print =</span> <span class="ot">FALSE</span>)[[<span class="st">&quot;Sample size&quot;</span>]] <span class="co"># 3-period</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a><span class="co"># 95% CI of CVs in %</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a><span class="kw">round</span>(<span class="dv">100</span><span class="op">*</span>PowerTOST<span class="op">::</span><span class="kw">CVCL</span>(<span class="dt">CV =</span> CV, <span class="dt">df =</span> <span class="dv">3</span><span class="op">*</span>n4<span class="dv">-4</span>, <span class="st">&quot;2-sided&quot;</span>), <span class="dv">2</span>) <span class="co"># 4-period</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true"></a><span class="co"># lower CL upper CL </span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true"></a><span class="co">#    26.19    35.15</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true"></a><span class="kw">round</span>(<span class="dv">100</span><span class="op">*</span>PowerTOST<span class="op">::</span><span class="kw">CVCL</span>(<span class="dt">CV =</span> CV, <span class="dt">df =</span> <span class="dv">2</span><span class="op">*</span>n3<span class="dv">-3</span>, <span class="st">&quot;2-sided&quot;</span>), <span class="dv">2</span>) <span class="co"># 3-period</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true"></a><span class="co"># lower CL upper CL </span></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true"></a><span class="co">#    26.18    35.18</span></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true"></a><span class="co"># As above but assume that only 12 subjects remain in each sequence</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true"></a><span class="kw">round</span>(<span class="dv">100</span><span class="op">*</span>PowerTOST<span class="op">::</span><span class="kw">CVCL</span>(<span class="dt">CV =</span> CV, <span class="dt">df =</span> <span class="dv">3</span><span class="op">*</span><span class="dv">24-4</span>, <span class="st">&quot;2-sided&quot;</span>), <span class="dv">2</span>) <span class="co"># 4-period</span></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true"></a><span class="co"># lower CL upper CL </span></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true"></a><span class="co">#    25.55    36.40</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true"></a><span class="kw">round</span>(<span class="dv">100</span><span class="op">*</span>PowerTOST<span class="op">::</span><span class="kw">CVCL</span>(<span class="dt">CV =</span> CV, <span class="dt">df =</span> <span class="dv">2</span><span class="op">*</span><span class="dv">24-3</span>, <span class="st">&quot;2-sided&quot;</span>), <span class="dv">2</span>) <span class="co"># 3-period</span></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true"></a><span class="co"># lower CL upper CL </span></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true"></a><span class="co">#    24.71    38.28</span></span></code></pre></div>
-<p>It is unclear why the four period replicate is considered by the <abbr title="European Medicines Agency">EMA</abbr> to give a more ‘reliable’ estimate than the three period replicate.</p>
+<p>If less than twelve subjects are eligible in sequence <code>RTR</code> of a <code>TRT | RTR</code> design (and in analogy in sequence <code>TRR</code> of a <code>TRR | RTT</code> design), the user is notified about the ‘uncertain’ estimate of <em>CV</em><sub>wR</sub>. However, in a sufficiently powered study such a case is <a href="https://forum.bebac.at/forum_entry.php?id=15139" title="BEBA Forum, 23 July 2015">extremely unlikely</a>.<br />
+Let us explore the 95% confidence interval of the <em>CV</em>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># Estimate sample sizes of full replicate designs (theta0 0.90,</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="co"># target power 0.80) and CI of the CV with library PowerTOST</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>CV     &lt;-<span class="st"> </span><span class="fl">0.30</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>design &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;2x2x4&quot;</span>, <span class="st">&quot;2x2x3&quot;</span>) <span class="co"># 4- and 3-period full replicate designs</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a>res    &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">design =</span> <span class="kw">rep</span>(design, <span class="dv">2</span>), <span class="dt">n =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="ot">NA</span>, <span class="dv">2</span>), <span class="kw">rep</span>(<span class="dv">12</span>, <span class="dv">2</span>)),</span>
+<span id="cb9-6"><a href="#cb9-6"></a>                     <span class="dt">df =</span> <span class="ot">NA</span>, <span class="dt">CV =</span> CV, <span class="dt">lower =</span> <span class="ot">NA</span>, <span class="dt">upper =</span> <span class="ot">NA</span>)</span>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="co"># 95% confidence interval of the CV</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(res)) {</span>
+<span id="cb9-9"><a href="#cb9-9"></a>  <span class="cf">if</span> (<span class="kw">is.na</span>(res<span class="op">$</span>n[i])) {</span>
+<span id="cb9-10"><a href="#cb9-10"></a>    res<span class="op">$</span>n[i] &lt;-<span class="st"> </span>PowerTOST<span class="op">::</span><span class="kw">sampleN.scABEL</span>(<span class="dt">CV =</span> CV,</span>
+<span id="cb9-11"><a href="#cb9-11"></a>                                          <span class="dt">design =</span> res<span class="op">$</span>design[i],</span>
+<span id="cb9-12"><a href="#cb9-12"></a>                                          <span class="dt">details =</span> <span class="ot">FALSE</span>,</span>
+<span id="cb9-13"><a href="#cb9-13"></a>                                          <span class="dt">print =</span> <span class="ot">FALSE</span>)[[<span class="st">&quot;Sample size&quot;</span>]]</span>
+<span id="cb9-14"><a href="#cb9-14"></a>  }</span>
+<span id="cb9-15"><a href="#cb9-15"></a>  <span class="cf">if</span> (i <span class="op">&gt;</span><span class="st"> </span><span class="dv">2</span> ) {</span>
+<span id="cb9-16"><a href="#cb9-16"></a>    n<span class="fl">.1</span> &lt;-<span class="st"> </span>res<span class="op">$</span>n[i<span class="dv">-2</span>] <span class="op">/</span><span class="st"> </span><span class="dv">2</span> <span class="co"># no dropouts in one sequence</span></span>
+<span id="cb9-17"><a href="#cb9-17"></a>    n<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="dv">12</span>             <span class="co"># only 12 eligible subjects in the other</span></span>
+<span id="cb9-18"><a href="#cb9-18"></a>    res<span class="op">$</span>n[i] &lt;-<span class="st"> </span>n<span class="fl">.1</span> <span class="op">+</span><span class="st"> </span>n<span class="fl">.2</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a>  }</span>
+<span id="cb9-20"><a href="#cb9-20"></a>  <span class="cf">if</span> (res<span class="op">$</span>design[i] <span class="op">==</span><span class="st"> &quot;2x2x4&quot;</span>) {</span>
+<span id="cb9-21"><a href="#cb9-21"></a>    res<span class="op">$</span>df[i] &lt;-<span class="st"> </span><span class="dv">3</span> <span class="op">*</span><span class="st"> </span>res<span class="op">$</span>n[i] <span class="op">-</span><span class="st"> </span><span class="dv">4</span></span>
+<span id="cb9-22"><a href="#cb9-22"></a>  } <span class="cf">else</span> {</span>
+<span id="cb9-23"><a href="#cb9-23"></a>    res<span class="op">$</span>df[i] &lt;-<span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>res<span class="op">$</span>n[i] <span class="op">-</span><span class="st"> </span><span class="dv">3</span></span>
+<span id="cb9-24"><a href="#cb9-24"></a>  }</span>
+<span id="cb9-25"><a href="#cb9-25"></a>  res[i, <span class="dv">5</span><span class="op">:</span><span class="dv">6</span>] &lt;-<span class="st"> </span><span class="kw">round</span>(PowerTOST<span class="op">::</span><span class="kw">CVCL</span>(<span class="dt">CV =</span> CV,</span>
+<span id="cb9-26"><a href="#cb9-26"></a>                                       <span class="dt">df =</span> res<span class="op">$</span>df[i],</span>
+<span id="cb9-27"><a href="#cb9-27"></a>                                       <span class="dt">side =</span> <span class="st">&quot;2-sided&quot;</span>,</span>
+<span id="cb9-28"><a href="#cb9-28"></a>                                       <span class="dt">alpha =</span> <span class="fl">0.05</span>), <span class="dv">3</span>)</span>
+<span id="cb9-29"><a href="#cb9-29"></a>}</span>
+<span id="cb9-30"><a href="#cb9-30"></a><span class="kw">print</span>(res, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb9-31"><a href="#cb9-31"></a><span class="co">#  design  n df  CV lower upper</span></span>
+<span id="cb9-32"><a href="#cb9-32"></a><span class="co">#   2x2x4 34 98 0.3 0.262 0.351</span></span>
+<span id="cb9-33"><a href="#cb9-33"></a><span class="co">#   2x2x3 50 97 0.3 0.262 0.352</span></span>
+<span id="cb9-34"><a href="#cb9-34"></a><span class="co">#   2x2x4 29 83 0.3 0.259 0.357</span></span>
+<span id="cb9-35"><a href="#cb9-35"></a><span class="co">#   2x2x3 37 71 0.3 0.256 0.362</span></span>
+<span id="cb9-36"><a href="#cb9-36"></a><span class="co"># Rows 1-2: Sample sizes for target power</span></span>
+<span id="cb9-37"><a href="#cb9-37"></a><span class="co"># Rows 3-4: Only 12 eligible subjects in one sequence</span></span></code></pre></div>
+<p>It is incomprehensible why a four period full replicate design is considered by the <abbr title="European Medicines Agency">EMA</abbr> to give a more ‘reliable’ estimate of the <em>CV</em> than a three period full replicate design.</p>
 </div>
 <div id="model_struc" class="section level2">
 <h2>Model structure</h2>
-<p>The <abbr title="European Medicines Agency">EMA</abbr>’s models assume equal [<em>sic</em>] intra-subject variances of Test and Reference (like in <abbr title="2-treatment 2-sequence 2-period crossover">2×2×2</abbr> trials) – even if proven false in one of the full replicate designs (were <em>both</em> <em>CV</em><sub>wT</sub> and <em>CV</em><sub>wR</sub> can be estimated). Hence, amongst biostatisticians they are called ‘crippled models’ because the replicative nature of the study is ignored.</p>
-<p>The nested structure <em>subject(sequence)</em> of the <a href="#methods">methods</a> leads to an over-specified model.<a href="#fn12" class="footnote-ref" id="fnref12"><sup>12</sup></a> The simple model<br />
+<p>The <abbr title="European Medicines Agency">EMA</abbr>’s models assume equal [<em>sic</em>] intra-subject variances of Test and Reference (like in <abbr title="2-treatment 2-sequence 2-period crossover">2×2×2</abbr> trials) – even if proven false in one of the full replicate designs (were <em>both</em> <em>CV</em><sub>wT</sub> and <em>CV</em><sub>wR</sub> can be estimated). Hence, among biostatisticians they are called ‘crippled models’ because the replicative nature of the study is ignored.</p>
+<p>It should be noted that by default <code>ANOVA()</code> produces a ‘Type I’ table, <em>i.e.</em>, all tests are performed against the residual error. Starting with version 1.1.0 ‘Type III’ is employed in order to obtain the correct test for carryover, where <em>subject</em> has to be tested against <em>subject</em>(<em>sequence</em>).<a href="#fn15" class="footnote-ref" id="fnref15"><sup>15</sup></a></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">method.A</span>(<span class="dt">data =</span> rds01, <span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">verbose=</span><span class="ot">TRUE</span>)</span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="co"># </span></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="co"># Data set DS01: Method A by lm() </span></span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="co"># ----------------------------------- </span></span>
+<span id="cb10-5"><a href="#cb10-5"></a><span class="co"># Type III Analysis of Variance Table</span></span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="co"># </span></span>
+<span id="cb10-7"><a href="#cb10-7"></a><span class="co"># Response: log(PK)</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a><span class="co">#                   Df   Sum Sq  Mean Sq  F value     Pr(&gt;F)</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a><span class="co"># sequence           1   0.0077 0.007652  0.00268  0.9588496</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a><span class="co"># period             3   0.6984 0.232784  1.45494  0.2278285</span></span>
+<span id="cb10-11"><a href="#cb10-11"></a><span class="co"># treatment          1   1.7681 1.768098 11.05095  0.0010405</span></span>
+<span id="cb10-12"><a href="#cb10-12"></a><span class="co"># sequence:subject  75 214.1296 2.855061 17.84467 &lt; 2.22e-16</span></span>
+<span id="cb10-13"><a href="#cb10-13"></a><span class="co"># Residuals        217  34.7190 0.159995                    </span></span>
+<span id="cb10-14"><a href="#cb10-14"></a><span class="co"># </span></span>
+<span id="cb10-15"><a href="#cb10-15"></a><span class="co"># treatment T – R:</span></span>
+<span id="cb10-16"><a href="#cb10-16"></a><span class="co">#   Estimate Std. Error    t value   Pr(&gt;|t|) </span></span>
+<span id="cb10-17"><a href="#cb10-17"></a><span class="co"># 0.14547400 0.04650870 3.12788000 0.00200215 </span></span>
+<span id="cb10-18"><a href="#cb10-18"></a><span class="co"># 217 Degrees of Freedom</span></span></code></pre></div>
+<p>In ‘Type I’ the <em>F</em> value of <em>sequence</em> would be <span class="math inline">\(\small{\frac{0.007652}{0.159995}=0.04783}\)</span> with <span class="math inline">\(\small{p(F_{q=0.04783,\,df_1=1,\,df_2=217})\sim 0.827}\)</span>, whereas in ‘Type III’ it is <span class="math inline">\(\small{\frac{0.007652}{2.855061}=0.00268}\)</span> with <span class="math inline">\(\small{p(F_{q=0.00268,\,df_1=1,\,df_2=75})\sim 0.959}\)</span>.</p>
+<p>The nested structure <em>subject</em>(<em>sequence</em>) of the <a href="#methods">methods</a> leads to an over-specified model.<a href="#fn16" class="footnote-ref" id="fnref16"><sup>16</sup></a> The simple model<br />
     <em>sequence</em>, <em>subject</em>, <em>period</em>, <em>treatment</em><br />
 gives identical estimates of the residual variance and the treatment effect and hence, its confidence interval.</p>
 <p>The same holds true for the <a href="#cv">EMA’s model</a> to estimate <em>CV</em><sub>wR</sub>. The simple model<br />
     <em>subject</em>, <em>period</em><br />
 gives an identical estimate of the residual variance.</p>
-<p>Reference-scaling is acceptable for <em>C</em><sub>max</sub> (immediate release products: <abbr title="Bioequivalence">BE</abbr> Guideline) and <em>C</em><sub>max</sub>, <em>C</em><sub>max,ss</sub>, <em>C</em><sub>τ,ss</sub>, <sub>partial</sub><em>AUC</em> (modified release products<a href="#fn13" class="footnote-ref" id="fnref13"><sup>13</sup></a>). The intention to widen the limits has to be stated in the protocol and – contrary to the <abbr title="U.S. Food and Drug Administration">FDA</abbr>’s <abbr title="Reference Scaled Average Bioequivalence">RSABE</abbr> – a clinical justification provided.</p>
+<p>Reference-scaling is acceptable for <em>C</em><sub>max</sub> (immediate release products: <abbr title="Bioequivalence">BE</abbr> Guideline) and <em>C</em><sub>max</sub>, <em>C</em><sub>max,ss</sub>, <em>C</em><sub>τ,ss</sub>, <sub>partial</sub><em>AUC</em> (modified release products<a href="#fn17" class="footnote-ref" id="fnref17"><sup>17</sup></a>). The intention to expand the limits has to be stated in the protocol and – contrary to the <abbr title="U.S. Food and Drug Administration">FDA</abbr>’s <abbr title="Reference Scaled Average Bioequivalence">RSABE</abbr> – a clinical justification provided.</p>
 <blockquote>
 <p><em>Those <abbr title="Highly Variable Drug Product">HVDP</abbr> for which a wider difference in C<sub>max</sub> is considered clinically irrelevant based on a sound clinical justification can be assessed with a widened acceptance range. The request for widened interval must be prospectively specified in the protocol.</em></p>
 <p>— <abbr title="Bioequivalence">BE</abbr> Guideline</p>
@@ -471,42 +509,63 @@ gives an identical estimate of the residual variance.</p>
 <h2>BE limits, PE restriction, rounding issues</h2>
 <p>The limits can be expanded based on <em>CV</em><sub>wR</sub>.</p>
 <ul>
-<li><em>CV<sub>wR</sub></em> ≤ 30%<br />
+<li><span class="math inline">\(\small{CV_\textrm{wR}\leq 30\%}\)</span><br />
 Lower cap, <em>i.e.</em>, no scaling, conventional limits:<br />
-<span class="math inline">\(\small{\left[{L,U}\right] = {80.00 - 125.00\%}}\)</span></li>
-<li>30% &lt; <em>CV<sub>wR</sub></em> ≤ 50%<br />
+<span class="math inline">\(\small{\left\{{L,U}\right\} = 80.00 - 125.00\%}\)</span></li>
+<li><span class="math inline">\(\small{30\%&lt;CV_\textrm{wR}\leq 50\%}\)</span> (EMA), <span class="math inline">\(\small{30\%&lt;CV_\textrm{wR}\leq \sim57.4\%}\)</span> (Health Canada)<br />
 Expanded limits based on <span class="math inline">\(s_\textrm{wR}\)</span>:<br />
-<span class="math inline">\(\small{\left[ {L,\,U} \right] = 100\cdot \exp (\mp 0.760 \cdot {s_\textrm{wR}})}\)</span></li>
-<li><em>CV</em><sub>wR</sub> &gt; 50%<br />
+<span class="math inline">\(\small{\left\{L,\,U\right\} = 100\cdot \exp(\mp 0.760\cdot{s_\textrm{wR}})}\)</span></li>
+<li><span class="math inline">\(\small{CV_\textrm{wR}&gt;50\%}\)</span> (EMA), <span class="math inline">\(\small{CV_\textrm{wR}&gt;\sim57.4\%}\)</span><br />
 Upper cap, <em>i.e.</em>, applying <span class="math inline">\(\small{s^*_\textrm{wR}=\sqrt{\log_{e}(CV_\textrm{cap}^{2}+1)}}\)</span> in the expansion formula or<br />
-<span class="math inline">\(\small{\left[ {L,U} \right] = {69.84 - 143.19\%}}\)</span>.</li>
+<span class="math inline">\(\small{\left\{L,U\right\} = 69.84 - 143.19\%}\)</span> (EMA)<br />
+<span class="math inline">\(\small{\left\{L,U\right\} = 66.7 - 150.0\%}\)</span> (Health Canada).</li>
 </ul>
-<p>In reference-scaling a so-called <em>mixed</em> (a.k.a. <em>aggregate</em>) criterion is applied. In order to pass <abbr title="Bioequivalence">BE</abbr>,</p>
+<p>The special case recommended by the <abbr title="Gulf Cooperation Council: Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, the United Arab Emirates.">GCC</abbr> is:</p>
 <ul>
-<li>the 90% confidence interval has to lie entirely within the acceptance range <span class="math inline">\(\small{\left[ {L,U} \right]}\)</span> <em>and</em></li>
+<li><span class="math inline">\(\small{CV_\textrm{wR}\leq 30\%}\)</span><br />
+Lower cap, <em>i.e.</em>, no scaling, conventional limits:<br />
+<span class="math inline">\(\small{\left\{{L,U}\right\} = 80.00 - 125.00\%}\)</span><br />
+</li>
+<li><span class="math inline">\(\small{CV_\textrm{wR}&gt;30\%}\)</span><br />
+Widened limits:<br />
+<span class="math inline">\(\small{\left\{{L,U}\right\} = 75.00 - 133.33\%}\)</span></li>
+</ul>
+<p>In reference-scaling a so-called <em>mixed</em> (a.k.a. <em>aggregate</em>) criterion is applied. In order to pass <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>,</p>
+<ul>
+<li>the 90% confidence interval has to lie entirely within the acceptance range <span class="math inline">\(\small{\left\{L,U\right\}}\)</span> <em>and</em></li>
 <li>the point estimate (PE) has to lie within 80.00 – 125.00%.</li>
 </ul>
 <p>To avoid discontinuities due to double rounding, expanded limits are calculated in full numeric precision and only the confidence interval is rounded according to the guideline.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="co"># Calculate limits with library PowerTOST</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>CV &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">30</span>, <span class="dv">40</span>, <span class="fl">49.6</span>, <span class="dv">50</span>, <span class="fl">50.4</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">CV =</span> CV, <span class="dt">L =</span> <span class="ot">NA</span>, <span class="dt">U =</span> <span class="ot">NA</span>, <span class="dt">cap =</span> <span class="st">&quot;&quot;</span>,</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a>                 <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="kw">seq_along</span>(CV)) {</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a>  df[i, <span class="dv">2</span><span class="op">:</span><span class="dv">3</span>] &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%.8f&quot;</span>, PowerTOST<span class="op">::</span><span class="kw">scABEL</span>(CV[i]<span class="op">/</span><span class="dv">100</span>)<span class="op">*</span><span class="dv">100</span>)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a>}</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a>df<span class="op">$</span>cap[df<span class="op">$</span>CV <span class="op">&lt;=</span><span class="st"> </span><span class="dv">30</span>] &lt;-<span class="st"> &quot;lower&quot;</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a>df<span class="op">$</span>cap[df<span class="op">$</span>CV <span class="op">&gt;=</span><span class="st"> </span><span class="dv">50</span>] &lt;-<span class="st"> &quot;upper&quot;</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true"></a><span class="kw">names</span>(df)[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;CV(%)&quot;</span>, <span class="st">&quot;L(%)&quot;</span>, <span class="st">&quot;U(%)&quot;</span>)</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a><span class="kw">print</span>(df, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a><span class="co">#  CV(%)        L(%)         U(%)   cap</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a><span class="co">#   30.0 80.00000000 125.00000000 lower</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a><span class="co">#   40.0 74.61770240 134.01645559      </span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a><span class="co">#   49.6 70.01700049 142.82245641      </span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true"></a><span class="co">#   50.0 69.83678198 143.19101936 upper</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true"></a><span class="co">#   50.4 69.83678198 143.19101936 upper</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># Calculate limits with library PowerTOST</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>CV &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">30</span>, <span class="dv">50</span>, <span class="fl">57.382</span>)</span>
+<span id="cb11-3"><a href="#cb11-3"></a>df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">CV =</span> CV,</span>
+<span id="cb11-4"><a href="#cb11-4"></a>                 <span class="dt">reg1 =</span> <span class="st">&quot;EMA&quot;</span>, <span class="dt">L1 =</span> <span class="ot">NA</span>, <span class="dt">U1 =</span> <span class="ot">NA</span>, <span class="dt">cap1 =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb11-5"><a href="#cb11-5"></a>                 <span class="dt">reg2 =</span> <span class="st">&quot;HC&quot;</span>,  <span class="dt">L2 =</span> <span class="ot">NA</span>, <span class="dt">U2 =</span> <span class="ot">NA</span>, <span class="dt">cap2 =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb11-6"><a href="#cb11-6"></a>                 <span class="dt">reg3 =</span> <span class="st">&quot;GCC&quot;</span>, <span class="dt">L3 =</span> <span class="ot">NA</span>, <span class="dt">U3 =</span> <span class="ot">NA</span>, <span class="dt">cap3 =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb11-7"><a href="#cb11-7"></a>                 <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb11-8"><a href="#cb11-8"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="kw">seq_along</span>(CV)) {</span>
+<span id="cb11-9"><a href="#cb11-9"></a>  df[i, <span class="dv">3</span><span class="op">:</span><span class="dv">4</span>]   &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%.3f&quot;</span>,</span>
+<span id="cb11-10"><a href="#cb11-10"></a>                          PowerTOST<span class="op">::</span><span class="kw">scABEL</span>(CV[i]<span class="op">/</span><span class="dv">100</span>,</span>
+<span id="cb11-11"><a href="#cb11-11"></a>                                            <span class="dt">regulator =</span> df<span class="op">$</span>reg1[i])<span class="op">*</span><span class="dv">100</span>)</span>
+<span id="cb11-12"><a href="#cb11-12"></a>  df[i, <span class="dv">7</span><span class="op">:</span><span class="dv">8</span>]   &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%.1f&quot;</span>,</span>
+<span id="cb11-13"><a href="#cb11-13"></a>                          PowerTOST<span class="op">::</span><span class="kw">scABEL</span>(CV[i]<span class="op">/</span><span class="dv">100</span>,</span>
+<span id="cb11-14"><a href="#cb11-14"></a>                                            <span class="dt">regulator =</span> df<span class="op">$</span>reg2[i])<span class="op">*</span><span class="dv">100</span>)</span>
+<span id="cb11-15"><a href="#cb11-15"></a>  df[i, <span class="dv">11</span><span class="op">:</span><span class="dv">12</span>] &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%.3f&quot;</span>,</span>
+<span id="cb11-16"><a href="#cb11-16"></a>                          PowerTOST<span class="op">::</span><span class="kw">scABEL</span>(CV[i]<span class="op">/</span><span class="dv">100</span>,</span>
+<span id="cb11-17"><a href="#cb11-17"></a>                                            <span class="dt">regulator =</span> df<span class="op">$</span>reg3[i])<span class="op">*</span><span class="dv">100</span>)</span>
+<span id="cb11-18"><a href="#cb11-18"></a>}</span>
+<span id="cb11-19"><a href="#cb11-19"></a>df<span class="op">$</span>cap3[df<span class="op">$</span>CV <span class="op">&lt;=</span><span class="st"> </span><span class="dv">30</span>] &lt;-<span class="st"> </span>df<span class="op">$</span>cap2[df<span class="op">$</span>CV <span class="op">&lt;=</span><span class="st"> </span><span class="dv">30</span>] &lt;-<span class="st"> </span>df<span class="op">$</span>cap1[df<span class="op">$</span>CV <span class="op">&lt;=</span><span class="st"> </span><span class="dv">30</span>] &lt;-<span class="st"> &quot;lower&quot;</span></span>
+<span id="cb11-20"><a href="#cb11-20"></a>df<span class="op">$</span>cap1[df<span class="op">$</span>CV <span class="op">&gt;=</span><span class="st"> </span><span class="dv">50</span> <span class="op">&amp;</span><span class="st"> </span>df<span class="op">$</span>reg1 <span class="op">==</span><span class="st"> &quot;EMA&quot;</span>]    &lt;-<span class="st"> &quot;upper&quot;</span></span>
+<span id="cb11-21"><a href="#cb11-21"></a>df<span class="op">$</span>cap2[df<span class="op">$</span>CV <span class="op">&gt;=</span><span class="st"> </span><span class="fl">57.382</span> <span class="op">&amp;</span><span class="st"> </span>df<span class="op">$</span>reg2 <span class="op">==</span><span class="st"> &quot;HC&quot;</span>] &lt;-<span class="st"> &quot;upper&quot;</span></span>
+<span id="cb11-22"><a href="#cb11-22"></a><span class="kw">names</span>(df) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;CV(%)&quot;</span>, <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">&quot;reg&quot;</span>, <span class="st">&quot;L(%)&quot;</span>, <span class="st">&quot;U(%)&quot;</span>, <span class="st">&quot;cap&quot;</span>), <span class="dv">3</span>))</span>
+<span id="cb11-23"><a href="#cb11-23"></a><span class="kw">print</span>(df, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb11-24"><a href="#cb11-24"></a><span class="co">#   CV(%) reg   L(%)    U(%)   cap reg L(%)  U(%)   cap reg   L(%)    U(%)   cap</span></span>
+<span id="cb11-25"><a href="#cb11-25"></a><span class="co">#  30.000 EMA 80.000 125.000 lower  HC 80.0 125.0 lower GCC 80.000 125.000 lower</span></span>
+<span id="cb11-26"><a href="#cb11-26"></a><span class="co">#  50.000 EMA 69.837 143.191 upper  HC 69.8 143.2       GCC 75.000 133.333      </span></span>
+<span id="cb11-27"><a href="#cb11-27"></a><span class="co">#  57.382 EMA 69.837 143.191 upper  HC 66.7 150.0 upper GCC 75.000 133.333</span></span></code></pre></div>
 <div class="figure">
 <img src="data:image/png;base64,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" style="width:80.0%" alt />
-<p class="caption">Discrete limits resulting from rounding</p>
+<p class="caption">Discrete limits resulting from rounding (EMA)</p>
 </div>
 </div>
 <div id="df_comp" class="section level2">
@@ -518,78 +577,78 @@ For background about approximations in different software packages see the elect
 <p><em>A simple linear mixed model, which assumes identical within-subject variability (Method B), may be acceptable as long as results obtained with the two methods do not lead to different regulatory decisions. However, in borderline cases […] additional analysis using Method A might be required.</em></p>
 <p>— <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document (January 2011 and later revisions)</p>
 </blockquote>
-<p>The half-width of the confidence interval in log-scale allows a comparison of methods (B <em>v.s.</em> A) where a higher value <em>might</em> point towards a more conservative decision.<a href="#fn14" class="footnote-ref" id="fnref14"><sup>14</sup></a> In the provided example datasets – with one exception – the conclusion of <abbr title="Bioequivalence">BE</abbr> (based on the mixed criterion) agrees between Method A and Method B.<br />
+<p>The half-width of the confidence interval in log-scale allows a comparison of methods (B <em>v.s.</em> A) where a higher value <em>might</em> point towards a more conservative decision.<a href="#fn18" class="footnote-ref" id="fnref18"><sup>18</sup></a> In the provided example datasets – with one exception – the conclusion of <abbr title="Bioequivalence">BE</abbr> (based on the mixed criterion) agrees between Method A and Method B.<br />
 However, for the highly incomplete dataset 14 Method A was <em>liberal</em> (passing by <abbr title="Analysis of Variance">ANOVA</abbr> but failing by the random effects model):</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="co"># Compare Method B acc. to the GL with Method A for all reference data sets.</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a>ds &lt;-<span class="st"> </span><span class="kw">substr</span>(<span class="kw">grep</span>(<span class="st">&quot;rds&quot;</span>, <span class="kw">unname</span>(<span class="kw">unlist</span>(<span class="kw">data</span>(<span class="dt">package =</span> <span class="st">&quot;replicateBE&quot;</span>))),</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a>                  <span class="dt">value =</span> <span class="ot">TRUE</span>), <span class="dt">start =</span> <span class="dv">1</span>, <span class="dt">stop =</span> <span class="dv">5</span>)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="kw">seq_along</span>(ds)) {</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a>  A &lt;-<span class="st"> </span><span class="kw">method.A</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> <span class="kw">eval</span>(<span class="kw">parse</span>(<span class="dt">text =</span> ds[i])))<span class="op">$</span>BE</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a>  B &lt;-<span class="st"> </span><span class="kw">method.B</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> <span class="kw">eval</span>(<span class="kw">parse</span>(<span class="dt">text =</span> ds[i])))<span class="op">$</span>BE</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true"></a>  r &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;A &quot;</span>, A, <span class="st">&quot;, B &quot;</span>, B, <span class="st">&quot; \u2013 &quot;</span>)</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true"></a>  <span class="kw">cat</span>(<span class="kw">paste0</span>(ds[i], <span class="st">&quot;:&quot;</span>), r)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true"></a>  <span class="cf">if</span> (A <span class="op">==</span><span class="st"> </span>B) {</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true"></a>    <span class="kw">cat</span>(<span class="st">&quot;Methods agree.</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true"></a>  } <span class="cf">else</span> {</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true"></a>    <span class="cf">if</span> (A <span class="op">==</span><span class="st"> &quot;fail&quot;</span> <span class="op">&amp;</span><span class="st"> </span>B <span class="op">==</span><span class="st"> &quot;pass&quot;</span>) {</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true"></a>      <span class="kw">cat</span>(<span class="st">&quot;Method A is conservative.</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true"></a>    } <span class="cf">else</span> {</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true"></a>      <span class="kw">cat</span>(<span class="st">&quot;Method B is conservative.</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true"></a>    }</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true"></a>  }</span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true"></a>}</span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true"></a><span class="co"># rds01: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true"></a><span class="co"># rds02: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true"></a><span class="co"># rds03: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true"></a><span class="co"># rds04: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true"></a><span class="co"># rds05: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true"></a><span class="co"># rds06: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true"></a><span class="co"># rds07: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true"></a><span class="co"># rds08: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true"></a><span class="co"># rds09: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-28"><a href="#cb11-28" aria-hidden="true"></a><span class="co"># rds10: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true"></a><span class="co"># rds11: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true"></a><span class="co"># rds12: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true"></a><span class="co"># rds13: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-32"><a href="#cb11-32" aria-hidden="true"></a><span class="co"># rds14: A pass, B fail – Method B is conservative.</span></span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true"></a><span class="co"># rds15: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true"></a><span class="co"># rds16: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true"></a><span class="co"># rds17: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true"></a><span class="co"># rds18: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true"></a><span class="co"># rds19: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true"></a><span class="co"># rds20: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-39"><a href="#cb11-39" aria-hidden="true"></a><span class="co"># rds21: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-40"><a href="#cb11-40" aria-hidden="true"></a><span class="co"># rds22: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-41"><a href="#cb11-41" aria-hidden="true"></a><span class="co"># rds23: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-42"><a href="#cb11-42" aria-hidden="true"></a><span class="co"># rds24: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-43"><a href="#cb11-43" aria-hidden="true"></a><span class="co"># rds25: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-44"><a href="#cb11-44" aria-hidden="true"></a><span class="co"># rds26: A fail, B fail – Methods agree.</span></span>
-<span id="cb11-45"><a href="#cb11-45" aria-hidden="true"></a><span class="co"># rds27: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-46"><a href="#cb11-46" aria-hidden="true"></a><span class="co"># rds28: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-47"><a href="#cb11-47" aria-hidden="true"></a><span class="co"># rds29: A pass, B pass – Methods agree.</span></span>
-<span id="cb11-48"><a href="#cb11-48" aria-hidden="true"></a><span class="co"># rds30: A fail, B fail – Methods agree.</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="co"># Compare Method B acc. to the GL with Method A for all reference data sets.</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>ds &lt;-<span class="st"> </span><span class="kw">substr</span>(<span class="kw">grep</span>(<span class="st">&quot;rds&quot;</span>, <span class="kw">unname</span>(<span class="kw">unlist</span>(<span class="kw">data</span>(<span class="dt">package =</span> <span class="st">&quot;replicateBE&quot;</span>))),</span>
+<span id="cb12-3"><a href="#cb12-3"></a>                  <span class="dt">value =</span> <span class="ot">TRUE</span>), <span class="dt">start =</span> <span class="dv">1</span>, <span class="dt">stop =</span> <span class="dv">5</span>)</span>
+<span id="cb12-4"><a href="#cb12-4"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="kw">seq_along</span>(ds)) {</span>
+<span id="cb12-5"><a href="#cb12-5"></a>  A &lt;-<span class="st"> </span><span class="kw">method.A</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> <span class="kw">eval</span>(<span class="kw">parse</span>(<span class="dt">text =</span> ds[i])))<span class="op">$</span>BE</span>
+<span id="cb12-6"><a href="#cb12-6"></a>  B &lt;-<span class="st"> </span><span class="kw">method.B</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> <span class="kw">eval</span>(<span class="kw">parse</span>(<span class="dt">text =</span> ds[i])))<span class="op">$</span>BE</span>
+<span id="cb12-7"><a href="#cb12-7"></a>  r &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;A &quot;</span>, A, <span class="st">&quot;, B &quot;</span>, B, <span class="st">&quot; \u2013 &quot;</span>)</span>
+<span id="cb12-8"><a href="#cb12-8"></a>  <span class="kw">cat</span>(<span class="kw">paste0</span>(ds[i], <span class="st">&quot;:&quot;</span>), r)</span>
+<span id="cb12-9"><a href="#cb12-9"></a>  <span class="cf">if</span> (A <span class="op">==</span><span class="st"> </span>B) {</span>
+<span id="cb12-10"><a href="#cb12-10"></a>    <span class="kw">cat</span>(<span class="st">&quot;Methods agree.</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb12-11"><a href="#cb12-11"></a>  } <span class="cf">else</span> {</span>
+<span id="cb12-12"><a href="#cb12-12"></a>    <span class="cf">if</span> (A <span class="op">==</span><span class="st"> &quot;fail&quot;</span> <span class="op">&amp;</span><span class="st"> </span>B <span class="op">==</span><span class="st"> &quot;pass&quot;</span>) {</span>
+<span id="cb12-13"><a href="#cb12-13"></a>      <span class="kw">cat</span>(<span class="st">&quot;Method A is conservative.</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb12-14"><a href="#cb12-14"></a>    } <span class="cf">else</span> {</span>
+<span id="cb12-15"><a href="#cb12-15"></a>      <span class="kw">cat</span>(<span class="st">&quot;Method B is conservative.</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb12-16"><a href="#cb12-16"></a>    }</span>
+<span id="cb12-17"><a href="#cb12-17"></a>  }</span>
+<span id="cb12-18"><a href="#cb12-18"></a>}</span>
+<span id="cb12-19"><a href="#cb12-19"></a><span class="co"># rds01: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-20"><a href="#cb12-20"></a><span class="co"># rds02: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-21"><a href="#cb12-21"></a><span class="co"># rds03: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-22"><a href="#cb12-22"></a><span class="co"># rds04: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-23"><a href="#cb12-23"></a><span class="co"># rds05: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-24"><a href="#cb12-24"></a><span class="co"># rds06: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-25"><a href="#cb12-25"></a><span class="co"># rds07: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-26"><a href="#cb12-26"></a><span class="co"># rds08: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-27"><a href="#cb12-27"></a><span class="co"># rds09: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-28"><a href="#cb12-28"></a><span class="co"># rds10: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-29"><a href="#cb12-29"></a><span class="co"># rds11: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-30"><a href="#cb12-30"></a><span class="co"># rds12: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-31"><a href="#cb12-31"></a><span class="co"># rds13: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-32"><a href="#cb12-32"></a><span class="co"># rds14: A pass, B fail – Method B is conservative.</span></span>
+<span id="cb12-33"><a href="#cb12-33"></a><span class="co"># rds15: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-34"><a href="#cb12-34"></a><span class="co"># rds16: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-35"><a href="#cb12-35"></a><span class="co"># rds17: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-36"><a href="#cb12-36"></a><span class="co"># rds18: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-37"><a href="#cb12-37"></a><span class="co"># rds19: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-38"><a href="#cb12-38"></a><span class="co"># rds20: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-39"><a href="#cb12-39"></a><span class="co"># rds21: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-40"><a href="#cb12-40"></a><span class="co"># rds22: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-41"><a href="#cb12-41"></a><span class="co"># rds23: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-42"><a href="#cb12-42"></a><span class="co"># rds24: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-43"><a href="#cb12-43"></a><span class="co"># rds25: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-44"><a href="#cb12-44"></a><span class="co"># rds26: A fail, B fail – Methods agree.</span></span>
+<span id="cb12-45"><a href="#cb12-45"></a><span class="co"># rds27: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-46"><a href="#cb12-46"></a><span class="co"># rds28: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-47"><a href="#cb12-47"></a><span class="co"># rds29: A pass, B pass – Methods agree.</span></span>
+<span id="cb12-48"><a href="#cb12-48"></a><span class="co"># rds30: A fail, B fail – Methods agree.</span></span></code></pre></div>
 <p>Exploring dataset 14:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a>A  &lt;-<span class="st"> </span><span class="kw">method.A</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> rds14)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a>B1 &lt;-<span class="st"> </span><span class="kw">method.B</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> rds14, <span class="dt">option =</span> <span class="dv">1</span>)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>B2 &lt;-<span class="st"> </span><span class="kw">method.B</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> rds14) <span class="co"># apply default option</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>B3 &lt;-<span class="st"> </span><span class="kw">method.B</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> rds14, <span class="dt">option =</span> <span class="dv">3</span>)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a><span class="co"># Rounding of CI according to the GL</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a>A[<span class="dv">15</span><span class="op">:</span><span class="dv">19</span>]  &lt;-<span class="st"> </span><span class="kw">round</span>(A[<span class="dv">15</span><span class="op">:</span><span class="dv">19</span>],  <span class="dv">2</span>) <span class="co"># all effects fixed</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>B1[<span class="dv">15</span><span class="op">:</span><span class="dv">19</span>] &lt;-<span class="st"> </span><span class="kw">round</span>(B1[<span class="dv">15</span><span class="op">:</span><span class="dv">19</span>], <span class="dv">2</span>) <span class="co"># Satterthwaite&#39;s df</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a>B2[<span class="dv">15</span><span class="op">:</span><span class="dv">19</span>] &lt;-<span class="st"> </span><span class="kw">round</span>(B2[<span class="dv">15</span><span class="op">:</span><span class="dv">19</span>], <span class="dv">2</span>) <span class="co"># df acc. to Q&amp;A</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a>B3[<span class="dv">15</span><span class="op">:</span><span class="dv">19</span>] &lt;-<span class="st"> </span><span class="kw">round</span>(B3[<span class="dv">15</span><span class="op">:</span><span class="dv">19</span>], <span class="dv">2</span>) <span class="co"># Kenward-Roger df</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true"></a>cs &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">10</span>, <span class="dv">15</span><span class="op">:</span><span class="dv">23</span>)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">rbind</span>(A[cs], B1[cs], B2[cs], B3[cs])</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true"></a><span class="kw">names</span>(df)[<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span><span class="op">:</span><span class="dv">6</span>, <span class="dv">11</span>)] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Meth.&quot;</span>, <span class="st">&quot;L(%)&quot;</span>, <span class="st">&quot;U(%)&quot;</span>,</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true"></a>                              <span class="st">&quot;CL.lo(%)&quot;</span>, <span class="st">&quot;CL.hi(%)&quot;</span>, <span class="st">&quot;hw&quot;</span>)</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true"></a>df[, <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">11</span>)] &lt;-<span class="st"> </span><span class="kw">signif</span>(df[, <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">11</span>)], <span class="dv">5</span>)</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true"></a><span class="kw">print</span>(df[<span class="kw">order</span>(df<span class="op">$</span>BE, df<span class="op">$</span>hw, <span class="dt">decreasing =</span> <span class="kw">c</span>(<span class="ot">FALSE</span>, <span class="ot">TRUE</span>)), ],</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true"></a>      <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true"></a><span class="co">#  Meth.     DF  L(%)   U(%) CL.lo(%) CL.hi(%) PE(%)   CI  GMR   BE      hw</span></span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true"></a><span class="co">#    B-1 197.44 69.84 143.19    69.21   121.27 91.62 fail pass fail 0.28043</span></span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true"></a><span class="co">#    B-2 192.00 69.84 143.19    69.21   121.28 91.62 fail pass fail 0.28046</span></span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true"></a><span class="co">#    B-3 195.99 69.84 143.19    69.21   121.28 91.62 fail pass fail 0.28052</span></span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true"></a><span class="co">#      A 192.00 69.84 143.19    69.99   123.17 92.85 pass pass pass 0.28261</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>A  &lt;-<span class="st"> </span><span class="kw">method.A</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> rds14)</span>
+<span id="cb13-2"><a href="#cb13-2"></a>B1 &lt;-<span class="st"> </span><span class="kw">method.B</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> rds14, <span class="dt">option =</span> <span class="dv">1</span>)</span>
+<span id="cb13-3"><a href="#cb13-3"></a>B2 &lt;-<span class="st"> </span><span class="kw">method.B</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> rds14) <span class="co"># apply default option</span></span>
+<span id="cb13-4"><a href="#cb13-4"></a>B3 &lt;-<span class="st"> </span><span class="kw">method.B</span>(<span class="dt">print =</span> <span class="ot">FALSE</span>, <span class="dt">details =</span> <span class="ot">TRUE</span>, <span class="dt">data =</span> rds14, <span class="dt">option =</span> <span class="dv">3</span>)</span>
+<span id="cb13-5"><a href="#cb13-5"></a><span class="co"># Rounding of CI according to the GL</span></span>
+<span id="cb13-6"><a href="#cb13-6"></a>A[<span class="dv">17</span><span class="op">:</span><span class="dv">21</span>]  &lt;-<span class="st"> </span><span class="kw">round</span>(A[<span class="dv">17</span><span class="op">:</span><span class="dv">21</span>],  <span class="dv">2</span>) <span class="co"># all effects fixed</span></span>
+<span id="cb13-7"><a href="#cb13-7"></a>B1[<span class="dv">17</span><span class="op">:</span><span class="dv">21</span>] &lt;-<span class="st"> </span><span class="kw">round</span>(B1[<span class="dv">17</span><span class="op">:</span><span class="dv">21</span>], <span class="dv">2</span>) <span class="co"># Satterthwaite&#39;s df</span></span>
+<span id="cb13-8"><a href="#cb13-8"></a>B2[<span class="dv">17</span><span class="op">:</span><span class="dv">21</span>] &lt;-<span class="st"> </span><span class="kw">round</span>(B2[<span class="dv">17</span><span class="op">:</span><span class="dv">21</span>], <span class="dv">2</span>) <span class="co"># df acc. to Q&amp;A</span></span>
+<span id="cb13-9"><a href="#cb13-9"></a>B3[<span class="dv">17</span><span class="op">:</span><span class="dv">21</span>] &lt;-<span class="st"> </span><span class="kw">round</span>(B3[<span class="dv">17</span><span class="op">:</span><span class="dv">21</span>], <span class="dv">2</span>) <span class="co"># Kenward-Roger df</span></span>
+<span id="cb13-10"><a href="#cb13-10"></a>cs &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">10</span>, <span class="dv">17</span><span class="op">:</span><span class="dv">25</span>)</span>
+<span id="cb13-11"><a href="#cb13-11"></a>df &lt;-<span class="st"> </span><span class="kw">rbind</span>(A[cs], B1[cs], B2[cs], B3[cs])</span>
+<span id="cb13-12"><a href="#cb13-12"></a><span class="kw">names</span>(df)[<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span><span class="op">:</span><span class="dv">6</span>, <span class="dv">11</span>)] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Meth.&quot;</span>, <span class="st">&quot;L(%)&quot;</span>, <span class="st">&quot;U(%)&quot;</span>,</span>
+<span id="cb13-13"><a href="#cb13-13"></a>                              <span class="st">&quot;CL.lo(%)&quot;</span>, <span class="st">&quot;CL.hi(%)&quot;</span>, <span class="st">&quot;hw&quot;</span>)</span>
+<span id="cb13-14"><a href="#cb13-14"></a>df[, <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">11</span>)] &lt;-<span class="st"> </span><span class="kw">signif</span>(df[, <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">11</span>)], <span class="dv">5</span>)</span>
+<span id="cb13-15"><a href="#cb13-15"></a><span class="kw">print</span>(df[<span class="kw">order</span>(df<span class="op">$</span>BE, df<span class="op">$</span>hw, <span class="dt">decreasing =</span> <span class="kw">c</span>(<span class="ot">FALSE</span>, <span class="ot">TRUE</span>)), ],</span>
+<span id="cb13-16"><a href="#cb13-16"></a>      <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb13-17"><a href="#cb13-17"></a><span class="co">#  Meth.     DF  L(%)   U(%) CL.lo(%) CL.hi(%) PE(%)   CI  GMR   BE      hw</span></span>
+<span id="cb13-18"><a href="#cb13-18"></a><span class="co">#      A 197.44 69.84 143.19    69.21   121.27 91.62 fail pass fail 0.28043</span></span>
+<span id="cb13-19"><a href="#cb13-19"></a><span class="co">#      A 192.00 69.84 143.19    69.21   121.28 91.62 fail pass fail 0.28046</span></span>
+<span id="cb13-20"><a href="#cb13-20"></a><span class="co">#      A 195.99 69.84 143.19    69.21   121.28 91.62 fail pass fail 0.28052</span></span>
+<span id="cb13-21"><a href="#cb13-21"></a><span class="co">#      A 192.00 69.84 143.19    69.99   123.17 92.85 pass pass pass 0.28261</span></span></code></pre></div>
 <p>All variants of Method B are more conservative than Method A. Before rounding the confidence interval, <code>option = 2</code> with 192 degrees of freedom would be more conservative (lower <abbr title="Confidence Limit">CL</abbr> 69.21029) than <code>option = 1</code> with 197.44 degrees of freedom (lower <abbr title="Confidence Limit">CL</abbr> 69.21286). Given the incompleteness of this data set (four missings in period 2, twelve in period 3, and 19 in period 4), Satterthwaite’s or Kenward-Roger degrees of freedom are probably the better choice.</p>
 <p>For detailed comparisons between methods based on simulations see the electronic <a href="https://static-content.springer.com/esm/art%3A10.1208%2Fs12248-020-0427-6/MediaObjects/12248_2020_427_MOESM1_ESM.docx">Supplementary Material</a> of Schütz <em>et al.</em></p>
 </div>
@@ -606,33 +665,33 @@ However, for the highly incomplete dataset 14 Method A was <em>liberal</em> (pa
 <p><em>An outlier test is not an expectation of the medicines agencies but outliers could be shown by a box plot. This would allow the medicines agencies to compare the data between them.</em></p>
 <p>— <abbr title="European Generic Medicines Association">EGA</abbr>/<abbr title="European Medicines Agency">EMA</abbr> <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document</p>
 </blockquote>
-<p>With the additional argument <code>ola = TRUE</code> in <code>method.A()</code> and <code>method.B()</code> an outlier analysis is performed, where the default <code>fence = 2</code>.<a href="#fn15" class="footnote-ref" id="fnref15"><sup>15</sup></a></p>
+<p>With the additional argument <code>ola = TRUE</code> in <code>method.A()</code> and <code>method.B()</code> an outlier analysis is performed, where the default <code>fence = 2</code>.<a href="#fn19" class="footnote-ref" id="fnref19"><sup>19</sup></a></p>
 <p>Results differ slightly depending on software’s algorithms to calculate the median and quartiles. Example with the ‘types’ implemented in R (note the differences even in the medians):</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="co">### Compare different types with some random data</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a>x &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">48</span>)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a>p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">75</span>)<span class="op">/</span><span class="dv">100</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true"></a>q &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">data =</span> <span class="st">&quot;&quot;</span>, <span class="dt">nrow =</span> <span class="dv">9</span>, <span class="dt">ncol =</span> <span class="dv">4</span>,</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true"></a>            <span class="dt">dimnames =</span> <span class="kw">list</span>(<span class="kw">paste</span>(<span class="st">&quot;type =&quot;</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>),</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true"></a>                            <span class="kw">c</span>(<span class="st">&quot;1st quart.&quot;</span>, <span class="st">&quot;median&quot;</span>, <span class="st">&quot;3rd quart.&quot;</span>,</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true"></a>                              <span class="st">&quot;software / default&quot;</span>)))</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>) {</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true"></a>  q[i, <span class="dv">1</span><span class="op">:</span><span class="dv">3</span>] &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%.5f&quot;</span>, <span class="kw">quantile</span>(x, <span class="dt">prob =</span> p, <span class="dt">type =</span> i))</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true"></a>}</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true"></a>q[<span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span><span class="op">:</span><span class="dv">8</span>), <span class="dv">4</span>] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;SAS, Stata&quot;</span>, <span class="st">&quot;SciPy&quot;</span>, <span class="st">&quot;Phoenix, Minitab, SPSS&quot;</span>,</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true"></a>                        <span class="st">&quot;R, S, MATLAB, Octave, Excel&quot;</span>, <span class="st">&quot;Maple&quot;</span>)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true"></a><span class="kw">print</span>(<span class="kw">as.data.frame</span>(q))</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true"></a><span class="co">#          1st quart.   median 3rd quart.          software / default</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true"></a><span class="co"># type = 1   -0.86817 -0.40487    0.29546                            </span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true"></a><span class="co"># type = 2   -0.85617 -0.38854    0.30042                  SAS, Stata</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true"></a><span class="co"># type = 3   -0.86817 -0.40487    0.29546                            </span></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true"></a><span class="co"># type = 4   -0.86817 -0.40487    0.29546                       SciPy</span></span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true"></a><span class="co"># type = 5   -0.85617 -0.38854    0.30042                            </span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true"></a><span class="co"># type = 6   -0.86217 -0.38854    0.30290      Phoenix, Minitab, SPSS</span></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true"></a><span class="co"># type = 7   -0.85017 -0.38854    0.29794 R, S, MATLAB, Octave, Excel</span></span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true"></a><span class="co"># type = 8   -0.85817 -0.38854    0.30124                       Maple</span></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true"></a><span class="co"># type = 9   -0.85767 -0.38854    0.30104</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="co">### Compare different types with some random data</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>x &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">48</span>)</span>
+<span id="cb14-3"><a href="#cb14-3"></a>p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">75</span>)<span class="op">/</span><span class="dv">100</span></span>
+<span id="cb14-4"><a href="#cb14-4"></a>q &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">data =</span> <span class="st">&quot;&quot;</span>, <span class="dt">nrow =</span> <span class="dv">9</span>, <span class="dt">ncol =</span> <span class="dv">4</span>,</span>
+<span id="cb14-5"><a href="#cb14-5"></a>            <span class="dt">dimnames =</span> <span class="kw">list</span>(<span class="kw">paste</span>(<span class="st">&quot;type =&quot;</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>),</span>
+<span id="cb14-6"><a href="#cb14-6"></a>                            <span class="kw">c</span>(<span class="st">&quot;1st quart.&quot;</span>, <span class="st">&quot;median&quot;</span>, <span class="st">&quot;3rd quart.&quot;</span>,</span>
+<span id="cb14-7"><a href="#cb14-7"></a>                              <span class="st">&quot;software / default&quot;</span>)))</span>
+<span id="cb14-8"><a href="#cb14-8"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>) {</span>
+<span id="cb14-9"><a href="#cb14-9"></a>  q[i, <span class="dv">1</span><span class="op">:</span><span class="dv">3</span>] &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%.5f&quot;</span>, <span class="kw">quantile</span>(x, <span class="dt">prob =</span> p, <span class="dt">type =</span> i))</span>
+<span id="cb14-10"><a href="#cb14-10"></a>}</span>
+<span id="cb14-11"><a href="#cb14-11"></a>q[<span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span><span class="op">:</span><span class="dv">8</span>), <span class="dv">4</span>] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;SAS, Stata&quot;</span>, <span class="st">&quot;SciPy&quot;</span>, <span class="st">&quot;Phoenix, Minitab, SPSS&quot;</span>,</span>
+<span id="cb14-12"><a href="#cb14-12"></a>                        <span class="st">&quot;R, S, MATLAB, Octave, Excel&quot;</span>, <span class="st">&quot;Maple&quot;</span>)</span>
+<span id="cb14-13"><a href="#cb14-13"></a><span class="kw">print</span>(<span class="kw">as.data.frame</span>(q))</span>
+<span id="cb14-14"><a href="#cb14-14"></a><span class="co">#          1st quart.   median 3rd quart.          software / default</span></span>
+<span id="cb14-15"><a href="#cb14-15"></a><span class="co"># type = 1   -0.86817 -0.40487    0.29546                            </span></span>
+<span id="cb14-16"><a href="#cb14-16"></a><span class="co"># type = 2   -0.85617 -0.38854    0.30042                  SAS, Stata</span></span>
+<span id="cb14-17"><a href="#cb14-17"></a><span class="co"># type = 3   -0.86817 -0.40487    0.29546                            </span></span>
+<span id="cb14-18"><a href="#cb14-18"></a><span class="co"># type = 4   -0.86817 -0.40487    0.29546                       SciPy</span></span>
+<span id="cb14-19"><a href="#cb14-19"></a><span class="co"># type = 5   -0.85617 -0.38854    0.30042                            </span></span>
+<span id="cb14-20"><a href="#cb14-20"></a><span class="co"># type = 6   -0.86217 -0.38854    0.30290      Phoenix, Minitab, SPSS</span></span>
+<span id="cb14-21"><a href="#cb14-21"></a><span class="co"># type = 7   -0.85017 -0.38854    0.29794 R, S, MATLAB, Octave, Excel</span></span>
+<span id="cb14-22"><a href="#cb14-22"></a><span class="co"># type = 8   -0.85817 -0.38854    0.30124                       Maple</span></span>
+<span id="cb14-23"><a href="#cb14-23"></a><span class="co"># type = 9   -0.85767 -0.38854    0.30104</span></span></code></pre></div>
 <ul>
-<li>Box plots of studentized<a href="#fn16" class="footnote-ref" id="fnref16"><sup>16</sup></a> and standarized<a href="#fn17" class="footnote-ref" id="fnref17"><sup>17</sup></a> model residuals are constructed.<a href="#fn18" class="footnote-ref" id="fnref18"><sup>18</sup></a></li>
+<li>Box plots of studentized<a href="#fn20" class="footnote-ref" id="fnref20"><sup>20</sup></a> and standarized<a href="#fn21" class="footnote-ref" id="fnref21"><sup>21</sup></a> model residuals are constructed.<a href="#fn22" class="footnote-ref" id="fnref22"><sup>22</sup></a></li>
 <li>Potential outliers are flagged based on the argument <code>fence</code> provided by the user.</li>
 <li>With the additional argument <code>verbose = TRUE</code> detailed information is shown in the console.</li>
 </ul>
@@ -683,18 +742,18 @@ Since both analyses arrive at the same conclusion, the study should be acceptabl
 <div id="app_out" class="section level1">
 <h1>Applicability, caveats, outlook</h1>
 <p>The <abbr title="European Medicines Agency">EMA</abbr>’s approach of reference-scaling for highly variable drugs / drug products is currently recommended in other jurisdictions as well (<em>e.g.</em>, the <abbr title="World Health Organization">WHO</abbr>; the <abbr title="Association of Southeast Asian Nations">ASEAN</abbr>, Australia, Brazil, Chile, the East African Community, Egypt, the <abbr title="Eurasian Economic Union">EEU</abbr>, New Zealand, and the Russian Federation). Health Canada accepts <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr> only for <em>AUC</em> with an upper cap of scaling at ~57.4% (maximum expansion to 66.7 – 150.0%) and <em>might</em> require a true mixed-effects model. Whether Method B is acceptable is unclear.</p>
-<p>If degrees of freedom are approximated (Satterthwaite, Kenward-Roger), the <abbr title="Statistical Analysis Plan">SAP</abbr> and statistical report should always specify which method will be / was used (see <a href="#method.b">above</a>) in order to allow recalculation in other software. This package uses the <em>expected</em> information matrix.<a href="#fn19" class="footnote-ref" id="fnref19"><sup>19</sup></a></p>
-<p>The estimated <em>CV</em><sub>wR</sub> is always uncertain (the degree of uncertainty depends on the <em>CV</em><sub>wR</sub> itself, the design, and – to a minor degree – the sample size), which might lead to an inflation of the type I error (<em>i.e.</em>, if <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr> is falsely applied although the <em>true</em> – but unknown – <em>CV</em><sub>wR</sub> is lower than its estimate).<a href="#fn20" class="footnote-ref" id="fnref20"><sup>20</sup></a><sup>,</sup> <a href="#fn21" class="footnote-ref" id="fnref21"><sup>21</sup></a><br />
-Use the optional argument <code>method.A(..., adjust = TRUE)</code> to iteratively adjust <em>α</em> to control the type I error.<a href="#fn22" class="footnote-ref" id="fnref22"><sup>22</sup></a><br />
-If you want to apply the most conservative approach of Molins <em>et al.</em><a href="#fn23" class="footnote-ref" id="fnref23"><sup>23</sup></a> (which corrects for <em>CV</em><sub>wR</sub> 30% instead of the observed one), get the data.frame of results with<br />
+<p>If degrees of freedom are approximated (Satterthwaite, Kenward-Roger), the <abbr title="Statistical Analysis Plan">SAP</abbr> and statistical report should always specify which method will be / was used (see <a href="#method.b">above</a>) in order to allow recalculation in other software. This package uses the <em>expected</em> information matrix.<a href="#fn23" class="footnote-ref" id="fnref23"><sup>23</sup></a></p>
+<p>The estimated <em>CV</em><sub>wR</sub> is always uncertain (the degree of uncertainty depends on the <em>CV</em><sub>wR</sub> itself, the design, and – to a minor degree – the sample size), which might lead to an inflation of the type I error (<em>i.e.</em>, if <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr> is falsely applied although the <em>true</em> – but unknown – <em>CV</em><sub>wR</sub> is lower than its estimate).<a href="#fn24" class="footnote-ref" id="fnref24"><sup>24</sup></a><sup>,</sup> <a href="#fn25" class="footnote-ref" id="fnref25"><sup>25</sup></a><br />
+Use the optional argument <code>method.A(..., adjust = TRUE)</code> to iteratively adjust <em>α</em> to control the type I error.<a href="#fn26" class="footnote-ref" id="fnref26"><sup>26</sup></a><br />
+If you want to apply the most conservative approach of Molins <em>et al.</em><a href="#fn27" class="footnote-ref" id="fnref27"><sup>27</sup></a> (which corrects for <em>CV</em><sub>wR</sub> 30% instead of the observed one), get the data.frame of results with<br />
 <code>  x &lt;- method.A(..., details = TRUE, print = FALSE)</code>.<br />
 Adjust <em>α</em> in library <a href="https://cran.r-project.org/package=PowerTOST">PowerTOST</a> and call <code>method.A()</code> again:<br />
 <code>  design &lt;- &quot;2x2x4&quot; # your design</code><br />
 <code>  n      &lt;- as.integer(strsplit(x[[6]], &quot;|&quot;, fixed = TRUE)[[1]]) # subjects / sequence</code><br />
 <code>  y      &lt;- PowerTOST::scABEL.ad(CV = 0.3, n = n, design = design, print = FALSE)</code><br />
 <code>  method.A(..., alpha = y$alpha.adj)</code></p>
-<p>The <abbr title="World Health Organization">WHO</abbr> accepts <a href="https://extranet.who.int/prequal/sites/default/files/documents/AUC_criteria_November2018.pdf" title="Guidance Document, 22 November 2018">reference-scaling for <em>AUC</em></a> (four period full replicate studies are mandatory in order to assess the vari­ability associated with each product). It is not evident how this assessment should be done.<br />
-In <abbr title="Population Bioequivalence">PBE</abbr> and <abbr title="Individual Bioequivalence">IBE</abbr> the <em>s</em><sub>wT</sub>/<em>s</em><sub>wR</sub> ratio was assessed and ‘similar’ variability concluded for a ratio within 0.667 – 1.500. However, the power of comparing variabilities in a study designed to compare means is low. This was one of the reasons why <abbr title="Population Bioequivalence">PBE</abbr> and <abbr title="Individual Bioequivalence">IBE</abbr> were not implemented in regulatory practice. An alternative approach is given in the <abbr title="U.S. Food and Drug Administration">FDA</abbr>’s <a href="https://www.accessdata.fda.gov/drugsatfda_docs/psg/Warfarin_Sodium_tab_09218_RC12-12.pdf" title="Draft recommended Dec 2012">guidance on warfarin</a> where variabilities are considered ‘comparable’ if the upper confidence limit of <em>σ</em><sub>wT</sub>/<em>σ</em><sub>wR</sub> is ≤2.5.</p>
+<p>The <abbr title="World Health Organization">WHO</abbr> accepts reference-scaling for <em>AUC</em> (four period full replicate studies are mandatory in order to assess the vari­ability associated with each product).<a href="#fn28" class="footnote-ref" id="fnref28"><sup>28</sup></a> It is not evident how this assessment should be done.<br />
+In <abbr title="Population Bioequivalence">PBE</abbr> and <abbr title="Individual Bioequivalence">IBE</abbr> the <em>s</em><sub>wT</sub>/<em>s</em><sub>wR</sub> ratio was assessed and ‘similar’ variability concluded for a ratio within 0.667 – 1.500. However, the power of comparing variabilities in a study designed to compare means is low. This was one of the reasons why <abbr title="Population Bioequivalence">PBE</abbr> and <abbr title="Individual Bioequivalence">IBE</abbr> were not implemented in regulatory practice. An alternative approach is given by the <abbr title="U.S. Food and Drug Administration">FDA</abbr> where variabilities are considered ‘comparable’ if the upper confidence limit of <em>σ</em><sub>wT</sub>/<em>σ</em><sub>wR</sub> is ≤2.5.<a href="#fn29" class="footnote-ref" id="fnref29"><sup>29</sup></a></p>
 </div>
 <div id="cross" class="section level1">
 <h1>Cross-validation</h1>
@@ -710,10 +769,7 @@ In <abbr title="Population Bioequivalence">PBE</abbr> and <abbr title="Individua
 </div>
 <div id="license" class="section level1">
 <h1>License</h1>
-<h4 class="author">
-Helmut Schütz 2021-05-14
-</h4>
-<p><a href="https://cran.r-project.org/web/licenses/GPL-3" title="GNU General Public License, Version 3">GPL-3</a></p>
+<p><a href="https://cran.r-project.org/web/licenses/GPL-3" title="GNU General Public License, Version 3">GPL-3</a> Helmut Schütz 2021-06-21</p>
 </div>
 <div id="disclaimer" class="section level1">
 <h1>Disclaimer</h1>
@@ -722,130 +778,135 @@ Helmut Schütz 2021-05-14
 <div id="session" class="section level1">
 <h1>Session Information</h1>
 <p>Inspect this information for reproducibility. Of particular importance are the versions of R and the packages used to create this workflow. It is considered good practice to record this information with every analysis.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a><span class="kw">options</span>(<span class="dt">width =</span> <span class="dv">80</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true"></a>devtools<span class="op">::</span><span class="kw">session_info</span>()</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true"></a><span class="co"># - Session info ---------------------------------------------------------------</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true"></a><span class="co">#  setting  value                       </span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true"></a><span class="co">#  version  R version 4.0.5 (2021-03-31)</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true"></a><span class="co">#  os       Windows 7 x64 SP 1          </span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true"></a><span class="co">#  system   x86_64, mingw32             </span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true"></a><span class="co">#  ui       RTerm                       </span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true"></a><span class="co">#  language EN                          </span></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true"></a><span class="co">#  collate  C                           </span></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true"></a><span class="co">#  ctype    German_Germany.1252         </span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true"></a><span class="co">#  tz       Europe/Vienna               </span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true"></a><span class="co">#  date     2021-05-14                  </span></span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true"></a><span class="co"># </span></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true"></a><span class="co"># - Packages -------------------------------------------------------------------</span></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true"></a><span class="co">#  package       * version    date       lib source        </span></span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true"></a><span class="co">#  backports       1.2.1      2020-12-09 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true"></a><span class="co">#  boot            1.3-28     2021-05-03 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true"></a><span class="co">#  broom           0.7.6      2021-04-05 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true"></a><span class="co">#  bslib           0.2.4      2021-01-25 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true"></a><span class="co">#  cachem          1.0.4      2021-02-13 [2] CRAN (R 4.0.4)</span></span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true"></a><span class="co">#  callr           3.7.0      2021-04-20 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true"></a><span class="co">#  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true"></a><span class="co">#  cli             2.5.0      2021-04-26 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true"></a><span class="co">#  colorspace      2.0-1      2021-05-04 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true"></a><span class="co">#  crayon          1.4.1      2021-02-08 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true"></a><span class="co">#  cubature        2.0.4.1    2020-07-06 [2] CRAN (R 4.0.2)</span></span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true"></a><span class="co">#  desc            1.3.0      2021-03-05 [2] CRAN (R 4.0.4)</span></span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true"></a><span class="co">#  devtools        2.4.1      2021-05-05 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true"></a><span class="co">#  digest          0.6.27     2020-10-24 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true"></a><span class="co">#  dplyr           1.0.6      2021-05-05 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true"></a><span class="co">#  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true"></a><span class="co">#  evaluate        0.14       2019-05-28 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true"></a><span class="co">#  fansi           0.4.2      2021-01-15 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true"></a><span class="co">#  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true"></a><span class="co">#  fs              1.5.0      2020-07-31 [2] CRAN (R 4.0.2)</span></span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true"></a><span class="co">#  generics        0.1.0      2020-10-31 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true"></a><span class="co">#  ggplot2         3.3.3      2020-12-30 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true"></a><span class="co">#  glue            1.4.2      2020-08-27 [2] CRAN (R 4.0.2)</span></span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true"></a><span class="co">#  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true"></a><span class="co">#  htmltools       0.5.1.1    2021-01-22 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-42"><a href="#cb16-42" aria-hidden="true"></a><span class="co">#  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-43"><a href="#cb16-43" aria-hidden="true"></a><span class="co">#  jsonlite        1.7.2      2020-12-09 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-44"><a href="#cb16-44" aria-hidden="true"></a><span class="co">#  knitr           1.33       2021-04-24 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-45"><a href="#cb16-45" aria-hidden="true"></a><span class="co">#  lattice         0.20-44    2021-05-02 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-46"><a href="#cb16-46" aria-hidden="true"></a><span class="co">#  lifecycle       1.0.0      2021-02-15 [2] CRAN (R 4.0.4)</span></span>
-<span id="cb16-47"><a href="#cb16-47" aria-hidden="true"></a><span class="co">#  lme4            1.1-26     2020-12-01 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-48"><a href="#cb16-48" aria-hidden="true"></a><span class="co">#  lmerTest        3.1-3      2020-10-23 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-49"><a href="#cb16-49" aria-hidden="true"></a><span class="co">#  magrittr        2.0.1      2020-11-17 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-50"><a href="#cb16-50" aria-hidden="true"></a><span class="co">#  MASS            7.3-54     2021-05-03 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-51"><a href="#cb16-51" aria-hidden="true"></a><span class="co">#  Matrix          1.2-18     2019-11-27 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-52"><a href="#cb16-52" aria-hidden="true"></a><span class="co">#  memoise         2.0.0      2021-01-26 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-53"><a href="#cb16-53" aria-hidden="true"></a><span class="co">#  minqa           1.2.4      2014-10-09 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-54"><a href="#cb16-54" aria-hidden="true"></a><span class="co">#  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-55"><a href="#cb16-55" aria-hidden="true"></a><span class="co">#  mvtnorm         1.1-1      2020-06-09 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-56"><a href="#cb16-56" aria-hidden="true"></a><span class="co">#  nlme            3.1-152    2021-02-04 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-57"><a href="#cb16-57" aria-hidden="true"></a><span class="co">#  nloptr          1.2.2.2    2020-07-02 [2] CRAN (R 4.0.2)</span></span>
-<span id="cb16-58"><a href="#cb16-58" aria-hidden="true"></a><span class="co">#  numDeriv        2016.8-1.1 2019-06-06 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-59"><a href="#cb16-59" aria-hidden="true"></a><span class="co">#  pbkrtest        0.5.1      2021-03-09 [2] CRAN (R 4.0.4)</span></span>
-<span id="cb16-60"><a href="#cb16-60" aria-hidden="true"></a><span class="co">#  pillar          1.6.0      2021-04-13 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-61"><a href="#cb16-61" aria-hidden="true"></a><span class="co">#  pkgbuild        1.2.0      2020-12-15 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-62"><a href="#cb16-62" aria-hidden="true"></a><span class="co">#  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-63"><a href="#cb16-63" aria-hidden="true"></a><span class="co">#  pkgload         1.2.1      2021-04-06 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-64"><a href="#cb16-64" aria-hidden="true"></a><span class="co">#  PowerTOST       1.5.3.9000 2021-05-09 [2] local         </span></span>
-<span id="cb16-65"><a href="#cb16-65" aria-hidden="true"></a><span class="co">#  prettyunits     1.1.1      2020-01-24 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-66"><a href="#cb16-66" aria-hidden="true"></a><span class="co">#  processx        3.5.2      2021-04-30 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-67"><a href="#cb16-67" aria-hidden="true"></a><span class="co">#  ps              1.6.0      2021-02-28 [2] CRAN (R 4.0.4)</span></span>
-<span id="cb16-68"><a href="#cb16-68" aria-hidden="true"></a><span class="co">#  purrr           0.3.4      2020-04-17 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-69"><a href="#cb16-69" aria-hidden="true"></a><span class="co">#  R6              2.5.0      2020-10-28 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-70"><a href="#cb16-70" aria-hidden="true"></a><span class="co">#  Rcpp            1.0.6      2021-01-15 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-71"><a href="#cb16-71" aria-hidden="true"></a><span class="co">#  readxl          1.3.1      2019-03-13 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-72"><a href="#cb16-72" aria-hidden="true"></a><span class="co">#  remotes         2.3.0      2021-04-01 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-73"><a href="#cb16-73" aria-hidden="true"></a><span class="co">#  replicateBE   * 1.0.17     2021-05-13 [1] local         </span></span>
-<span id="cb16-74"><a href="#cb16-74" aria-hidden="true"></a><span class="co">#  rlang           0.4.11     2021-04-30 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-75"><a href="#cb16-75" aria-hidden="true"></a><span class="co">#  rmarkdown       2.8        2021-05-07 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-76"><a href="#cb16-76" aria-hidden="true"></a><span class="co">#  rprojroot       2.0.2      2020-11-15 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-77"><a href="#cb16-77" aria-hidden="true"></a><span class="co">#  sass            0.3.1      2021-01-24 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-78"><a href="#cb16-78" aria-hidden="true"></a><span class="co">#  scales          1.1.1      2020-05-11 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-79"><a href="#cb16-79" aria-hidden="true"></a><span class="co">#  sessioninfo     1.1.1      2018-11-05 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-80"><a href="#cb16-80" aria-hidden="true"></a><span class="co">#  statmod         1.4.35     2020-10-19 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-81"><a href="#cb16-81" aria-hidden="true"></a><span class="co">#  stringi         1.5.3      2020-09-09 [2] CRAN (R 4.0.2)</span></span>
-<span id="cb16-82"><a href="#cb16-82" aria-hidden="true"></a><span class="co">#  stringr         1.4.0      2019-02-10 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-83"><a href="#cb16-83" aria-hidden="true"></a><span class="co">#  TeachingDemos   2.12       2020-04-07 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-84"><a href="#cb16-84" aria-hidden="true"></a><span class="co">#  testthat        3.0.2      2021-02-14 [2] CRAN (R 4.0.4)</span></span>
-<span id="cb16-85"><a href="#cb16-85" aria-hidden="true"></a><span class="co">#  tibble          3.1.1      2021-04-18 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-86"><a href="#cb16-86" aria-hidden="true"></a><span class="co">#  tidyr           1.1.3      2021-03-03 [2] CRAN (R 4.0.4)</span></span>
-<span id="cb16-87"><a href="#cb16-87" aria-hidden="true"></a><span class="co">#  tidyselect      1.1.1      2021-04-30 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-88"><a href="#cb16-88" aria-hidden="true"></a><span class="co">#  usethis         2.0.1      2021-02-10 [2] CRAN (R 4.0.3)</span></span>
-<span id="cb16-89"><a href="#cb16-89" aria-hidden="true"></a><span class="co">#  utf8            1.2.1      2021-03-12 [2] CRAN (R 4.0.4)</span></span>
-<span id="cb16-90"><a href="#cb16-90" aria-hidden="true"></a><span class="co">#  vctrs           0.3.8      2021-04-29 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-91"><a href="#cb16-91" aria-hidden="true"></a><span class="co">#  withr           2.4.2      2021-04-18 [2] CRAN (R 4.0.5)</span></span>
-<span id="cb16-92"><a href="#cb16-92" aria-hidden="true"></a><span class="co">#  xfun            0.22       2021-03-11 [2] CRAN (R 4.0.4)</span></span>
-<span id="cb16-93"><a href="#cb16-93" aria-hidden="true"></a><span class="co">#  yaml            2.2.1      2020-02-01 [2] CRAN (R 4.0.0)</span></span>
-<span id="cb16-94"><a href="#cb16-94" aria-hidden="true"></a><span class="co"># </span></span>
-<span id="cb16-95"><a href="#cb16-95" aria-hidden="true"></a><span class="co"># [1] C:/Users/HS/AppData/Local/Temp/RtmpygM25G/Rinst21c44c0e434</span></span>
-<span id="cb16-96"><a href="#cb16-96" aria-hidden="true"></a><span class="co"># [2] D:/Program Files/R/R-4.0.5/library</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">options</span>(<span class="dt">width =</span> <span class="dv">59</span>)</span>
+<span id="cb17-2"><a href="#cb17-2"></a>devtools<span class="op">::</span><span class="kw">session_info</span>()</span>
+<span id="cb17-3"><a href="#cb17-3"></a><span class="co"># - Session info ------------------------------------------</span></span>
+<span id="cb17-4"><a href="#cb17-4"></a><span class="co">#  setting  value                       </span></span>
+<span id="cb17-5"><a href="#cb17-5"></a><span class="co">#  version  R version 4.1.0 (2021-05-18)</span></span>
+<span id="cb17-6"><a href="#cb17-6"></a><span class="co">#  os       Windows 7 x64 SP 1          </span></span>
+<span id="cb17-7"><a href="#cb17-7"></a><span class="co">#  system   x86_64, mingw32             </span></span>
+<span id="cb17-8"><a href="#cb17-8"></a><span class="co">#  ui       RTerm                       </span></span>
+<span id="cb17-9"><a href="#cb17-9"></a><span class="co">#  language EN                          </span></span>
+<span id="cb17-10"><a href="#cb17-10"></a><span class="co">#  collate  C                           </span></span>
+<span id="cb17-11"><a href="#cb17-11"></a><span class="co">#  ctype    German_Germany.1252         </span></span>
+<span id="cb17-12"><a href="#cb17-12"></a><span class="co">#  tz       Europe/Vienna               </span></span>
+<span id="cb17-13"><a href="#cb17-13"></a><span class="co">#  date     2021-06-21                  </span></span>
+<span id="cb17-14"><a href="#cb17-14"></a><span class="co"># </span></span>
+<span id="cb17-15"><a href="#cb17-15"></a><span class="co"># - Packages ----------------------------------------------</span></span>
+<span id="cb17-16"><a href="#cb17-16"></a><span class="co">#  package       * version    date       lib source        </span></span>
+<span id="cb17-17"><a href="#cb17-17"></a><span class="co">#  backports       1.2.1      2020-12-09 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-18"><a href="#cb17-18"></a><span class="co">#  boot            1.3-28     2021-05-03 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-19"><a href="#cb17-19"></a><span class="co">#  broom           0.7.7      2021-06-13 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-20"><a href="#cb17-20"></a><span class="co">#  bslib           0.2.5.1    2021-05-18 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-21"><a href="#cb17-21"></a><span class="co">#  cachem          1.0.5      2021-05-15 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-22"><a href="#cb17-22"></a><span class="co">#  callr           3.7.0      2021-04-20 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-23"><a href="#cb17-23"></a><span class="co">#  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-24"><a href="#cb17-24"></a><span class="co">#  cli             2.5.0      2021-04-26 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-25"><a href="#cb17-25"></a><span class="co">#  colorspace      2.0-1      2021-05-04 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-26"><a href="#cb17-26"></a><span class="co">#  crayon          1.4.1      2021-02-08 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-27"><a href="#cb17-27"></a><span class="co">#  cubature        2.0.4.2    2021-05-13 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-28"><a href="#cb17-28"></a><span class="co">#  desc            1.3.0      2021-03-05 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-29"><a href="#cb17-29"></a><span class="co">#  devtools        2.4.2      2021-06-07 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-30"><a href="#cb17-30"></a><span class="co">#  digest          0.6.27     2020-10-24 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-31"><a href="#cb17-31"></a><span class="co">#  dplyr           1.0.7      2021-06-18 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-32"><a href="#cb17-32"></a><span class="co">#  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-33"><a href="#cb17-33"></a><span class="co">#  evaluate        0.14       2019-05-28 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-34"><a href="#cb17-34"></a><span class="co">#  fansi           0.5.0      2021-05-25 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-35"><a href="#cb17-35"></a><span class="co">#  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-36"><a href="#cb17-36"></a><span class="co">#  fs              1.5.0      2020-07-31 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-37"><a href="#cb17-37"></a><span class="co">#  generics        0.1.0      2020-10-31 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-38"><a href="#cb17-38"></a><span class="co">#  ggplot2         3.3.4      2021-06-16 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-39"><a href="#cb17-39"></a><span class="co">#  glue            1.4.2      2020-08-27 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-40"><a href="#cb17-40"></a><span class="co">#  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-41"><a href="#cb17-41"></a><span class="co">#  htmltools       0.5.1.1    2021-01-22 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-42"><a href="#cb17-42"></a><span class="co">#  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-43"><a href="#cb17-43"></a><span class="co">#  jsonlite        1.7.2      2020-12-09 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-44"><a href="#cb17-44"></a><span class="co">#  knitr           1.33       2021-04-24 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-45"><a href="#cb17-45"></a><span class="co">#  lattice         0.20-44    2021-05-02 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-46"><a href="#cb17-46"></a><span class="co">#  lifecycle       1.0.0      2021-02-15 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-47"><a href="#cb17-47"></a><span class="co">#  lme4            1.1-27     2021-05-15 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-48"><a href="#cb17-48"></a><span class="co">#  lmerTest        3.1-3      2020-10-23 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-49"><a href="#cb17-49"></a><span class="co">#  magrittr        2.0.1      2020-11-17 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-50"><a href="#cb17-50"></a><span class="co">#  MASS            7.3-54     2021-05-03 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-51"><a href="#cb17-51"></a><span class="co">#  Matrix          1.3-4      2021-06-01 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-52"><a href="#cb17-52"></a><span class="co">#  memoise         2.0.0      2021-01-26 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-53"><a href="#cb17-53"></a><span class="co">#  minqa           1.2.4      2014-10-09 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-54"><a href="#cb17-54"></a><span class="co">#  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-55"><a href="#cb17-55"></a><span class="co">#  mvtnorm         1.1-2      2021-06-07 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-56"><a href="#cb17-56"></a><span class="co">#  nlme            3.1-152    2021-02-04 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-57"><a href="#cb17-57"></a><span class="co">#  nloptr          1.2.2.2    2020-07-02 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-58"><a href="#cb17-58"></a><span class="co">#  numDeriv        2016.8-1.1 2019-06-06 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-59"><a href="#cb17-59"></a><span class="co">#  pbkrtest        0.5.1      2021-03-09 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-60"><a href="#cb17-60"></a><span class="co">#  pillar          1.6.1      2021-05-16 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-61"><a href="#cb17-61"></a><span class="co">#  pkgbuild        1.2.0      2020-12-15 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-62"><a href="#cb17-62"></a><span class="co">#  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-63"><a href="#cb17-63"></a><span class="co">#  pkgload         1.2.1      2021-04-06 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-64"><a href="#cb17-64"></a><span class="co">#  PowerTOST       1.5.3.9000 2021-05-26 [2] local         </span></span>
+<span id="cb17-65"><a href="#cb17-65"></a><span class="co">#  prettyunits     1.1.1      2020-01-24 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-66"><a href="#cb17-66"></a><span class="co">#  processx        3.5.2      2021-04-30 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-67"><a href="#cb17-67"></a><span class="co">#  ps              1.6.0      2021-02-28 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-68"><a href="#cb17-68"></a><span class="co">#  purrr           0.3.4      2020-04-17 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-69"><a href="#cb17-69"></a><span class="co">#  R6              2.5.0      2020-10-28 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-70"><a href="#cb17-70"></a><span class="co">#  Rcpp            1.0.6      2021-01-15 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-71"><a href="#cb17-71"></a><span class="co">#  readxl          1.3.1      2019-03-13 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-72"><a href="#cb17-72"></a><span class="co">#  remotes         2.4.0      2021-06-02 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-73"><a href="#cb17-73"></a><span class="co">#  replicateBE   * 1.1.0      2021-06-21 [1] local         </span></span>
+<span id="cb17-74"><a href="#cb17-74"></a><span class="co">#  rlang           0.4.11     2021-04-30 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-75"><a href="#cb17-75"></a><span class="co">#  rmarkdown       2.9        2021-06-15 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-76"><a href="#cb17-76"></a><span class="co">#  rprojroot       2.0.2      2020-11-15 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-77"><a href="#cb17-77"></a><span class="co">#  sass            0.4.0      2021-05-12 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-78"><a href="#cb17-78"></a><span class="co">#  scales          1.1.1      2020-05-11 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-79"><a href="#cb17-79"></a><span class="co">#  sessioninfo     1.1.1      2018-11-05 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-80"><a href="#cb17-80"></a><span class="co">#  stringi         1.6.1      2021-05-10 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-81"><a href="#cb17-81"></a><span class="co">#  stringr         1.4.0      2019-02-10 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-82"><a href="#cb17-82"></a><span class="co">#  TeachingDemos   2.12       2020-04-07 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-83"><a href="#cb17-83"></a><span class="co">#  testthat        3.0.3      2021-06-16 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-84"><a href="#cb17-84"></a><span class="co">#  tibble          3.1.2      2021-05-16 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-85"><a href="#cb17-85"></a><span class="co">#  tidyr           1.1.3      2021-03-03 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-86"><a href="#cb17-86"></a><span class="co">#  tidyselect      1.1.1      2021-04-30 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-87"><a href="#cb17-87"></a><span class="co">#  usethis         2.0.1      2021-02-10 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-88"><a href="#cb17-88"></a><span class="co">#  utf8            1.2.1      2021-03-12 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-89"><a href="#cb17-89"></a><span class="co">#  vctrs           0.3.8      2021-04-29 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-90"><a href="#cb17-90"></a><span class="co">#  withr           2.4.2      2021-04-18 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-91"><a href="#cb17-91"></a><span class="co">#  xfun            0.24       2021-06-15 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-92"><a href="#cb17-92"></a><span class="co">#  yaml            2.2.1      2020-02-01 [2] CRAN (R 4.1.0)</span></span>
+<span id="cb17-93"><a href="#cb17-93"></a><span class="co"># </span></span>
+<span id="cb17-94"><a href="#cb17-94"></a><span class="co"># [1] C:/Users/HS/AppData/Local/Temp/RtmpwvPwNV/Rinst14b045d27892</span></span>
+<span id="cb17-95"><a href="#cb17-95"></a><span class="co"># [2] D:/Program Files/R/R-4.1.0/library</span></span></code></pre></div>
 </div>
 <div class="footnotes">
 <hr />
 <ol>
 <li id="fn1"><p>Schütz H, Tomashevskiy M, Labes D, Shitova A, González-de la Parra M, Fuglsang A. <em>Reference Data­sets for Studies in a Replicate Design Intended for Average Bioequivalence with Expanding Limits.</em> AAPS J. 2020; 22(2): Article 44. <a href="https://doi.org/10.1208/s12248-020-0427-6">doi:10.1208/s12248-020-0427-6</a>.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
-<li id="fn2"><p>European Medicines Agency. <em>Annex I.</em> London, 21 September 2016. <a href="https://www.ema.europa.eu/en/documents/other/31-annex-i-statistical-analysis-methods-compatible-ema-bioequivalence-guideline_en.pdf">EMA/582648/2016</a>.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
-<li id="fn3"><p>European Medicines Agency, Committee for Medicinal Products for Human Use. <em>Guideline on the Investigation of Bioequivalence.</em> London, 20 January 2010. <a href="https://www.ema.europa.eu/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf">CPMP/EWP/QWP/1401/98 Rev. 1/Corr **</a>.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
-<li id="fn4"><p>European Generic Medicines Association. <em>Revised EMA Bioequivalence Guideline. </em>3<sup>rd</sup> EGA Symposium on Bioequivalence. London, 1 June 2010. <a href="https://www.medicinesforeurope.com/wp-content/uploads/2016/03/EGA_BEQ_QA_WEB_QA_1_32.pdf">Questions &amp; Answers</a>.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
-<li id="fn5"><p>Satterthwaite FE. <em>An Approximate Distribution of Estimates of Variance Components.</em> Biometrics Bulletin. 1946; 2(6): 110–4. <a href="https://doi.org/10.2307/3002019">doi:10.2307/3002019</a>.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
-<li id="fn6"><p>Kenward MG, Roger JH. <em>Small Sample Inference for Fixed Effects from Restricted Maximum Likelihood.</em> Biometrics. 1997; 53(3): 983–97. <a href="https://doi.org/10.2307/2533558">doi:10.2307/2533558</a>.<a href="#fnref6" class="footnote-back">↩︎</a></p></li>
-<li id="fn7"><p>Kackar RN, Harville DA. <em>Approximations for Standard Errors of Estimators of Fixed and Random Effects in Mixed Linear Models.</em> J Am Stat Assoc. 1984; 79(388): 853–62. <a href="https://doi.org/10.1080/01621459.1984.10477102">doi:10.1080/01621459.1984.10477102</a>.<a href="#fnref7" class="footnote-back">↩︎</a></p></li>
-<li id="fn8"><p>Balaam LN. <em>A Two-Period Design with t<sup>2</sup> Experimental Units.</em> Biometrics. 1968; 24(1): 61–73. <a href="https://doi.org/10.2307/2528460">doi:10.2307/2528460</a>.<a href="#fnref8" class="footnote-back">↩︎</a></p></li>
-<li id="fn9"><p>Chow, SC, Shao J, Wang H. <em>Individual bioequivalence testing under 2×3 designs.</em> Stat Med. 2002; 21(5): 629–48. <a href="https://doi.org/10.1002/sim.1056">doi:10.1002/sim.1056</a>.<a href="#fnref9" class="footnote-back">↩︎</a></p></li>
-<li id="fn10"><p>Napierian logarithm (base <em>e</em>). The decadic logarithm (base 10) is not supported).<a href="#fnref10" class="footnote-back">↩︎</a></p></li>
-<li id="fn11"><p>European Medicines Agency. <em>Questions &amp; Answers: positions on specific questions addressed to the Pharmacokinetics Working Party (PKWP).</em> London, June 2015 (and later revisons). <a href="https://www.ema.europa.eu/en/documents/scientific-guideline/questions-answers-positions-specific-questions-addressed-pharmacokinetics-working-party_en.pdf">EMA/618604/2008</a>.<a href="#fnref11" class="footnote-back">↩︎</a></p></li>
-<li id="fn12"><p>Contradicts the law of parsimony. Such a nesting is superfluous since in comparative bioavailability trials subjects are uniquely coded. If, say, subject <code>1</code> is allocated to sequence <code>TRTR</code> there is not yet ‘another’ subject <code>1</code> allocated to sequence <code>RTRT</code>. This explains the many lines in SAS <code>PROC GML</code> given with <code>.</code> and in Phoenix WinNonlin as <code>not estimable</code>.<a href="#fnref12" class="footnote-back">↩︎</a></p></li>
-<li id="fn13"><p>European Medicines Agency, Committee for Medicinal Products for Human Use. <em>Guideline on the pharmacokinetic and clinical evaluation of modified release dosage forms.</em> London, 20 November 2014. <a href="https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-clinical-evaluation-modified-release-dosage-forms_en.pdf">EMA/CHMP/EWP/280/96</a><a href="#fnref13" class="footnote-back">↩︎</a></p></li>
-<li id="fn14"><p>Of course, only if point estimates are identical.<a href="#fnref14" class="footnote-back">↩︎</a></p></li>
-<li id="fn15"><p>The fences are given by the lowest datum still within <em>m</em>×IQR of the lower quartile, and the highest datum still within <em>m</em>×IQR of the upper quartile, where IQR is the interquartile range (difference between the 3<sup>rd</sup> and 1<sup>st</sup> quartiles). Data outside fences are considered outliers. Decreasing the multiplier <em>m</em> to <em>e.g.</em>, 1.5 might result in many outliers, whereas increasing the multiplier in only a few.<br />
-Different methods exist to calculate quartiles (nine ‘types’ are available in R, where the default is <code>type = 7</code>). R’s default is used by S, MATLAB, Octave, and Excel. Phoenix WinNonlin, Minitab, and SPSS use <code>type = 6</code>, ScyPy uses <code>type = 4</code>, whereas the default in SAS and Stata is <code>type = 2</code> (though others are available as well).<a href="#fnref15" class="footnote-back">↩︎</a></p></li>
-<li id="fn16"><p><em>Externally</em> studentized: <span class="math inline">\(\small{\widehat{\sigma}_{(i)}^2={1 \over n-m-1}\sum_{\begin{smallmatrix}j = 1\\j \ne i\end{smallmatrix}}^n \widehat{\varepsilon\,}_j^{\,2}}\)</span><a href="#fnref16" class="footnote-back">↩︎</a></p></li>
-<li id="fn17"><p><em>Internally</em> studentized: <span class="math inline">\(\small{\widehat{\sigma}^2={1 \over n-m}\sum_{j=1}^n \widehat{\varepsilon\,}_j^{\,2}}\)</span><a href="#fnref17" class="footnote-back">↩︎</a></p></li>
-<li id="fn18"><p>Both are available in SAS and R, whereas only the latter in <em>e.g.</em>, Phoenix WinNonlin. In general the former are slightly more restrictive. Which one will be used has to be stated in the <abbr title="Statistical Analysis Plan">SAP</abbr>.<a href="#fnref18" class="footnote-back">↩︎</a></p></li>
-<li id="fn19"><p>For Satterthwaite only available in Phoenix WinNonlin, SPSS, and Stata; as an option in SAS by <code>SCORING=1</code>. For Kenward-Roger default option <code>EIM</code> in Stata. The <em>observed</em> information matrix is the only available in JMP and default <code>SCORING=0</code> in SAS; option <code>OIM</code> in Stata.<a href="#fnref19" class="footnote-back">↩︎</a></p></li>
-<li id="fn20"><p>Wonnemann M, Frömke C, Koch A. <em>Inflation of the Type I Error: Investigations on Regulatory Recommendations for Bioequivalence of Highly Variable Drugs.</em> Pharm Res. 2015; 32(1): 135–43. <a href="https://doi.org/10.1007/s11095-014-1450-z">doi:10.1007/s11095-014-1450-z</a>.<a href="#fnref20" class="footnote-back">↩︎</a></p></li>
-<li id="fn21"><p>Muñoz J, Alcaide D, Ocaña J. <em>Consumer’s risk in the EMA and FDA regulatory approaches for bioequivalence in highly variable drugs.</em> Stat Med. 2016; 35(12): 1933–43. <a href="https://doi.org/10.1002/sim.6834">doi:10.1002/sim.6834</a>.<a href="#fnref21" class="footnote-back">↩︎</a></p></li>
-<li id="fn22"><p>Labes D, Schütz H. <em>Inflation of Type I Error in the Evaluation of Scaled Average Bioequivalence, and a Method for its Control.</em> Pharm Res. 2016; 33(11): 2805–14. <a href="https://doi.org/10.1007/s11095-016-2006-1">doi:10.1007/s11095-016-2006-1</a>.<a href="#fnref22" class="footnote-back">↩︎</a></p></li>
-<li id="fn23"><p>Molins E, Cobo E, Ocaña J. <em>Two-Stage Designs Versus European Scaled Average Designs in Bioequivalence Studies for Highly Variable Drugs: Which to Choose?</em> Stat Med. 2017: 36(30); 4777–88. <a href="https://doi.org/10.1002/sim.7452">doi:10.1002/sim.7452</a>.<a href="#fnref23" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>European Medicines Agency. EMA/582648/2016 <a href="https://www.ema.europa.eu/en/documents/other/31-annex-i-statistical-analysis-methods-compatible-ema-bioequivalence-guideline_en.pdf"><em>Annex I.</em></a> London. 21 September 2016.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>European Medicines Agency. Committee for Medicinal Products for Human Use. <em>Guideline on the Investigation of Bioequivalence.</em> <a href="https://www.ema.europa.eu/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf">CPMP/EWP/QWP/1401/98 Rev. 1/Corr **</a>. London. 20 January 2010.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p>Health Canada. <a href="https://www.canada.ca/content/dam/hc-sc/documents/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/conduct-analysis-comparative.pdf">Guidance Document. Conduct and Analysis of Comparative Bioavailability Studies.</a> Ottawa. 2018/06/08.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>Executive Board of the Health Ministers’ Council for GCC States. <a href="https://old.sfda.gov.sa/en/drug/drug_reg/Regulations/GCC_Guidelines_Bioequivalence.pdf"><em>The GCC Guidelines for Bioequivalence.</em></a> March 2016.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn6"><p>European Generic Medicines Association. <em>Revised EMA Bioequivalence Guideline. <a href="https://www.medicinesforeurope.com/wp-content/uploads/2016/03/EGA_BEQ_QA_WEB_QA_1_32.pdf">Questions &amp; Answers.</a></em> 3<sup>rd</sup> EGA Symposium on Bioequivalence. London. 1 June 2010.<a href="#fnref6" class="footnote-back">↩︎</a></p></li>
+<li id="fn7"><p>Satterthwaite FE. <em>An Approximate Distribution of Estimates of Variance Components.</em> Biometr Bull. 1946; 2(6): 110–4. <a href="https://doi.org/10.2307/3002019">doi:10.2307/3002019</a>.<a href="#fnref7" class="footnote-back">↩︎</a></p></li>
+<li id="fn8"><p>Kenward MG, Roger JH. <em>Small Sample Inference for Fixed Effects from Restricted Maximum Likelihood.</em> Biometrics. 1997; 53(3): 983–97. <a href="https://doi.org/10.2307/2533558">doi:10.2307/2533558</a>.<a href="#fnref8" class="footnote-back">↩︎</a></p></li>
+<li id="fn9"><p>Kackar RN, Harville DA. <em>Approximations for Standard Errors of Estimators of Fixed and Random Effects in Mixed Linear Models.</em> J Am Stat Assoc. 1984; 79(388): 853–62. <a href="https://doi.org/10.1080/01621459.1984.10477102">doi:10.1080/01621459.1984.10477102</a>.<a href="#fnref9" class="footnote-back">↩︎</a></p></li>
+<li id="fn10"><p>Medicines Control Council. Registration of Medicines. <a href="https://www.sahpra.org.za/wp-content/uploads/2020/01/61de452d2.06_Biostudies_Jun15_v6.pdf"><em>Biostudies.</em></a> Pretoria. June 2015.<a href="#fnref10" class="footnote-back">↩︎</a></p></li>
+<li id="fn11"><p>Balaam LN. <em>A Two-Period Design with t<sup>2</sup> Experimental Units.</em> Biometrics. 1968; 24(1): 61–73. <a href="https://doi.org/10.2307/2528460">doi:10.2307/2528460</a>.<a href="#fnref11" class="footnote-back">↩︎</a></p></li>
+<li id="fn12"><p>Chow, SC, Shao J, Wang H. <em>Individual bioequivalence testing under 2×3 designs.</em> Stat Med. 2002; 21(5): 629–48. <a href="https://doi.org/10.1002/sim.1056">doi:10.1002/sim.1056</a>.<a href="#fnref12" class="footnote-back">↩︎</a></p></li>
+<li id="fn13"><p>Napierian logarithm (base <em>e</em>). The decadic logarithm (base 10) is not supported).<a href="#fnref13" class="footnote-back">↩︎</a></p></li>
+<li id="fn14"><p>European Medicines Agency. <em>Questions &amp; Answers: positions on specific questions addressed to the Pharmacokinetics Working Party (PKWP).</em> <a href="https://www.ema.europa.eu/en/documents/scientific-guideline/questions-answers-positions-specific-questions-addressed-pharmacokinetics-working-party_en.pdf">EMA/618604/2008</a>. London, June 2015 (and later revisons).<a href="#fnref14" class="footnote-back">↩︎</a></p></li>
+<li id="fn15"><p>Chow S-C, Liu J-p. <em>Design and Analysis of Bioavailability and Bioequivalence Studies.</em> Boca Raton: CRC Press; 3<sup>rd</sup> ed. 2009. Chapter 3.2.<a href="#fnref15" class="footnote-back">↩︎</a></p></li>
+<li id="fn16"><p>It contradicts the law of parsimony. Such a nesting is superfluous since in comparative bioavailability trials subjects are uniquely coded. If, say, subject <code>1</code> is allocated to sequence <code>TRTR</code> there is not yet ‘another’ subject <code>1</code> allocated to sequence <code>RTRT</code>. This explains the many lines in SAS <code>PROC GML</code> given with <code>.</code> and in Phoenix WinNonlin as <code>not estimable</code>.<a href="#fnref16" class="footnote-back">↩︎</a></p></li>
+<li id="fn17"><p>European Medicines Agency, Committee for Medicinal Products for Human Use. <em>Guideline on the pharmacokinetic and clinical evaluation of modified release dosage forms.</em> <a href="https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-clinical-evaluation-modified-release-dosage-forms_en.pdf">EMA/CHMP/EWP/280/96.</a> London, 20 November 2014.<a href="#fnref17" class="footnote-back">↩︎</a></p></li>
+<li id="fn18"><p>Of course, only if point estimates are identical.<a href="#fnref18" class="footnote-back">↩︎</a></p></li>
+<li id="fn19"><p>The fences are given by the lowest datum still within <em>m</em>×IQR of the lower quartile, and the highest datum still within <em>m</em>×IQR of the upper quartile, where IQR is the interquartile range (difference between the 3<sup>rd</sup> and 1<sup>st</sup> quartiles). Data outside fences are considered outliers. Decreasing the multiplier <em>m</em> to <em>e.g.</em>, 1.5 might result in many outliers, whereas increasing the multiplier in only a few.<br />
+Different methods exist to calculate quartiles (nine ‘types’ are available in R, where the default is <code>type = 7</code>). R’s default is used by S, MATLAB, Octave, and Excel. Phoenix WinNonlin, Minitab, and SPSS use <code>type = 6</code>, ScyPy uses <code>type = 4</code>, whereas the default in SAS and Stata is <code>type = 2</code> (though others are available as well).<a href="#fnref19" class="footnote-back">↩︎</a></p></li>
+<li id="fn20"><p><em>Externally</em> studentized: <span class="math inline">\(\small{\widehat{\sigma}_{(i)}^2={1 \over n-m-1}\sum_{\begin{smallmatrix}j = 1\\j \ne i\end{smallmatrix}}^n \widehat{\varepsilon\,}_j^{\,2}}\)</span><a href="#fnref20" class="footnote-back">↩︎</a></p></li>
+<li id="fn21"><p><em>Internally</em> studentized: <span class="math inline">\(\small{\widehat{\sigma}^2={1 \over n-m}\sum_{j=1}^n \widehat{\varepsilon\,}_j^{\,2}}\)</span><a href="#fnref21" class="footnote-back">↩︎</a></p></li>
+<li id="fn22"><p>Both are available in SAS and R, whereas only the latter in <em>e.g.</em>, Phoenix WinNonlin. In general the former are slightly more restrictive. Which one will be used has to be stated in the <abbr title="Statistical Analysis Plan">SAP</abbr>.<a href="#fnref22" class="footnote-back">↩︎</a></p></li>
+<li id="fn23"><p>For Satterthwaite only available in Phoenix WinNonlin, SPSS, and Stata; as an option in SAS by <code>SCORING=1</code>. For Kenward-Roger default option <code>EIM</code> in Stata. The <em>observed</em> information matrix is the only available in JMP and default <code>SCORING=0</code> in SAS; option <code>OIM</code> in Stata.<a href="#fnref23" class="footnote-back">↩︎</a></p></li>
+<li id="fn24"><p>Wonnemann M, Frömke C, Koch A. <em>Inflation of the Type I Error: Investigations on Regulatory Recommendations for Bioequivalence of Highly Variable Drugs.</em> Pharm Res. 2015; 32(1): 135–43. <a href="https://doi.org/10.1007/s11095-014-1450-z">doi:10.1007/s11095-014-1450-z</a>.<a href="#fnref24" class="footnote-back">↩︎</a></p></li>
+<li id="fn25"><p>Muñoz J, Alcaide D, Ocaña J. <em>Consumer’s risk in the EMA and FDA regulatory approaches for bioequivalence in highly variable drugs.</em> Stat Med. 2016; 35(12): 1933–43. <a href="https://doi.org/10.1002/sim.6834">doi:10.1002/sim.6834</a>.<a href="#fnref25" class="footnote-back">↩︎</a></p></li>
+<li id="fn26"><p>Labes D, Schütz H. <em>Inflation of Type I Error in the Evaluation of Scaled Average Bioequivalence, and a Method for its Control.</em> Pharm Res. 2016; 33(11): 2805–14. <a href="https://doi.org/10.1007/s11095-016-2006-1">doi:10.1007/s11095-016-2006-1</a>.<a href="#fnref26" class="footnote-back">↩︎</a></p></li>
+<li id="fn27"><p>Molins E, Cobo E, Ocaña J. <em>Two-Stage Designs Versus European Scaled Average Designs in Bioequivalence Studies for Highly Variable Drugs: Which to Choose?</em> Stat Med. 2017: 36(30); 4777–88. <a href="https://doi.org/10.1002/sim.7452">doi:10.1002/sim.7452</a>.<a href="#fnref27" class="footnote-back">↩︎</a></p></li>
+<li id="fn28"><p>World Health Organization. <a href="https://extranet.who.int/pqweb/sites/default/files/documents/AUC_criteria_November2018.pdf"><em>Application of reference-scaled criteria for AUC in bioequivalence studies conducted for submission to PQTm.</em></a> Geneva. 22 November 2018.<a href="#fnref28" class="footnote-back">↩︎</a></p></li>
+<li id="fn29"><p>Food and Drug Administration. Office of Generic Drugs. <a href="https://www.accessdata.fda.gov/drugsatfda_docs/psg/Warfarin_Sodium_tab_09218_RC12-12.pdf"><em>Draft Guidance on Warfarin Sodium.</em></a> Recommended Dec 2012.<a href="#fnref29" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 

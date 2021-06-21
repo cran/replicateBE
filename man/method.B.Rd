@@ -11,17 +11,19 @@ Comparative BA-calculation for Average Bioequivalence with Expanding Limits by t
   random effect (\sQuote{Method B}) as specified in \emph{Annex I}.
 }
 \usage{
-method.B(alpha = 0.05, path.in, path.out, file, set = "", ext,
-         na = ".", sep = ",", dec = ".", logtrans = TRUE, ola = FALSE,
-         print = TRUE, details = FALSE, verbose = FALSE,
-         ask = FALSE, plot.bxp = FALSE, fence = 2, data = NULL, option = 2)
+method.B(alpha = 0.05, path.in, path.out = tempdir(), file, set = "", ext,
+         na = ".", sep = ",", dec = ".", logtrans = TRUE,
+         regulator = "EMA", ola = FALSE, print = TRUE, details = FALSE,
+         verbose = FALSE, ask = FALSE, plot.bxp = FALSE, fence = 2,
+         data = NULL, option = 2)
 }
 \arguments{
   \item{alpha}{
     Type I Error (\acronym{TIE}) probability (nominal level of the test).
     Conventionally set to 0.05, resulting in a
     \ifelse{html}{\out{100(1&ndash;2&alpha;)}}{\eqn{100(1-2\alpha)}{100(1-2alpha)}}
-    confidence interval.
+    confidence interval.\cr
+    If \code{regulator = "HC"} and \code{alpha = 0.5} only the point estimate will be assessed (for highly variable \ifelse{html}{\out{<em>C</em><sub>max</sub>}}{\eqn{C_\textrm{max}}{Cmax}} within 80.0--125.0\%).
   }
   \item{path.in}{
     Path to the data file for import.
@@ -29,6 +31,7 @@ method.B(alpha = 0.05, path.in, path.out, file, set = "", ext,
   \item{path.out}{
     Path to save the result file if \code{print=TRUE}. You must have
     write-permission to the folder. For simplicity your home folder \verb{"~/"} can be used.\cr
+    If missing, R’s standard temporary folder will be used.\cr
     If a box plot of outliers should be saved (\code{plot.bxp=TRUE}), this path will be
     used as well.
   }
@@ -68,6 +71,12 @@ method.B(alpha = 0.05, path.in, path.out, file, set = "", ext,
     will be internally log-transformed and used in the calculations. If
     \code{FALSE} the already log-transformed data (provided in the column
     \verb{logPK}) will be used in the calculations.
+  }
+  \item{regulator}{
+    Set regulatory conditions. If \code{"EMA"} (default) conventional ABEL will
+    be used. If \code{"HC"} Health Canada’s upper cap of scaling (~57.4\%)
+    will be applied. If \code{"GCC"} direct widening to 75.00--133.33\% will be
+    used if \code{CVwR>30\%}.
   }
   \item{ola}{
     Defaults to \code{FALSE}. If \code{TRUE} an outlier analysis based
@@ -120,7 +129,8 @@ method.B(alpha = 0.05, path.in, path.out, file, set = "", ext,
     will be equivalent to \acronym{SAS}’ \verb{DDFM=SATTERTHWAITE}
     and Phoenix WinNonlin’s \verb{Satterthwaite}.\cr
     \code{3} uses the Kenward-Roger approximation equivalent to Stata’s
-    \verb{dfm=Kenward Roger (EIM)}.
+    \verb{dfm=Kenward Roger (EIM)}.\cr
+    If \verb{regulator = "HC"}, only \code{1} or \code{3} are supported.
   }
 }
 
@@ -182,7 +192,9 @@ If argument \code{print = FALSE}, returns a data.frame with the elements:
     \code{DF} \tab degrees of freedom of the treatment comparison\cr
     \code{CVwT(\%)} \tab intra-subject coefficient of variation of the test treatment (full replicates only)\cr
     \code{CVwR(\%)} \tab intra-subject coefficient of variation of the reference treatment\cr
-    \code{sw.ratio} \tab ratio of intrasubject variabilities of \code{T} and \code{R} (full replicates only)\cr
+    \code{swT} \tab intra-subject standard deviation of the test treatment (full replicates only)\cr
+    \code{swR} \tab intra-subject standard deviation of the reference treatment\cr
+    \code{sw.ratio} \tab ratio of intra-subject deviations of \code{T} and \code{R} (full replicates only)\cr
     \code{sw.ratio.CL} \tab upper confidence limit of \code{sw.ratio} (full replicates only)
   }
 \itemize{
@@ -212,7 +224,8 @@ If \code{ola = TRUE} and at least one studentized outlier was detected:
   \tabular{ll}{
     \code{outlier} \tab outlying subject(s)\cr
     \code{CVwR.rec(\%)} \tab intra-subject coefficient of variation of \code{R}; recalculated after exclusion of outlier(s)\cr
-    \code{sw.ratio.rec} \tab ratio of intrasubject variabilities of \code{T} and \code{R} after exclusion of outlier(s); full replicates only\cr
+    \code{swR.rec} \tab intra-subject standard deviation of the reference treatment after exclusion of outlier(s)\cr
+    \code{sw.ratio.rec} \tab ratio of intra-subjectstandard deviations of \code{T} and \code{R} after exclusion of outlier(s); full replicates only\cr
     \code{sw.ratio.rec.CL} \tab upper confidence limit of \code{sw.ratio.rec} (full replicates only)
   }
 \itemize{
@@ -302,6 +315,8 @@ If \code{ola = TRUE} and at least one studentized outlier was detected:
   as well (\emph{e.g.}, the \acronym{WHO}; \acronym{ASEAN} States, Australia,
   Brazil, Chile, Egypt, the Eurasian Economic Union, the East African Community,
   New Zealand, the Russian Federation).\cr\cr
+  Health Canada’s variant of ABEL (upper cap of scaling ~57.4\% limiting the expansion
+  at 67.7--150.0\%) is only approximate because a mixed-effects model would be required.\cr\cr
   The \acronym{WHO} accepts reference-scaling for \ifelse{html}{\out{<em>AUC</em>}}{\eqn{AUC}{AUC}} (4-period full replicate
   studies are mandatory in order to assess the variability associated with each product).
   It is an open issue how this assessment should be done. In Population Bioequivalence (\acronym{PBE})
@@ -335,6 +350,10 @@ European Medicines Agency, Committee for Medicinal Products for Human Use. \emph
 
 European Medicines Agency. \emph{Clinical pharmacology and pharmacokinetics: questions and answers. 3.1 Which statistical method for the analysis of a bioequivalence study does the Agency recommend? Annex I}. London, 21 September 2016. \href{https://www.ema.europa.eu/en/documents/other/31-annex-i-statistical-analysis-methods-compatible-ema-bioequivalence-guideline_en.pdf}{EMA/582648/2016}
 
+Executive Board of the Health Ministers’ Council for GCC States. \emph{The GCC Guidelines for Bioequivalence.} 30/3/2016. \href{https://old.sfda.gov.sa/en/drug/drug_reg/Regulations/GCC_Guidelines_Bioequivalence.pdf}{Version 2.4}
+
+Health Canada. \emph{Guidance Document. Conduct and Analysis of Comparative Bioavailability Studies.} 2018/06/08. \href{https://www.canada.ca/content/dam/hc-sc/documents/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/conduct-analysis-comparative.pdf}{open access}
+
 European Medicines Agency, Committee for Medicinal Products for Human Use. \emph{Guideline on the pharmacokinetic and clinical evaluation of modified release dosage forms.} London, 20 November 2014. \href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-clinical-evaluation-modified-release-dosage-forms_en.pdf}{EMA/CPMP/EWP/280/96 Corr1}
 
 World Health Organization, Prequalification Team: medicines. \emph{Guidance Document: Application of reference-scaled criteria for AUC in bioequivalence studies conducted for submission to PQTm.} Geneva, 22 November 2018. \href{https://extranet.who.int/prequal/sites/default/files/documents/AUC_criteria_November2018.pdf}{open access}
@@ -356,10 +375,10 @@ Food and Drug Administration, Office of Generic Drugs. \emph{Draft Guidance on W
 # print to file.
 # Note: You must adapt the path-variables. The example reads from
 # the data provided by the library. Write-permissions must be granted
-# for 'path.out' in order to save the result file. Here to R's temporary
-# folder is used for simplicity.
+# for 'path.out' in order to save the result file. Here the default
+# (R's temporary folder) is used.
 path.in <- paste0(find.package("replicateBE"), "/extdata/")
-method.B(path.in = path.in, path.out = tempdir(), file = "DS", set = "01", ext = "csv")
+method.B(path.in = path.in, file = "DS", set = "01", ext = "csv")
 # Should result in:
 #   CVwT               :  35.16\%
 #   swT                :   0.34138
@@ -374,7 +393,7 @@ method.B(path.in = path.in, path.out = tempdir(), file = "DS", set = "01", ext =
 #
 # Internal reference dataset 01 used and results to R's temporary
 # folder. Additional outlier-analyis and box plot saved as PNG.
-method.B(ola = TRUE, path.out = tempdir(), plot.bxp = TRUE, data = rds01)
+method.B(ola = TRUE, plot.bxp = TRUE, data = rds01)
 # Should give the same as above. Additionally:
 #   Recalculation due to presence of 2 outliers (subj. 45|52)
 #   CVwR (outl. excl.) :  32.16\% (reference-scaling applicable)
@@ -393,8 +412,8 @@ x <- method.B(ola = TRUE, print = FALSE, details = TRUE, data = rds01)
 print(x, row.names = FALSE)
 # Compare Method B with Method A for all reference datasets.
 \donttest{
-ds <- substr(grep("rds", unname(unlist(data(package="replicateBE"))),
-                  value=TRUE), start=1, stop=5)
+ds <- substr(grep("rds", unname(unlist(data(package = "replicateBE"))),
+                  value = TRUE), start = 1, stop = 5)
 for (i in seq_along(ds)) {
   A <- method.A(print=FALSE, details=TRUE, data=eval(parse(text=ds[i])))$BE
   B <- method.B(print=FALSE, details=TRUE, data=eval(parse(text=ds[i])))$BE
@@ -416,14 +435,14 @@ for (i in seq_along(ds)) {
 #   rds14: A pass, B fail – Method B is conservative.
 #   ...
 \donttest{
-# Health Canada: Only the PE of Cmax has to lie with 80.0-125.0\%
+# Health Canada: Only the PE of Cmax has to lie within 80.0-125.0\%
 # (i.e., no CI is required). With alpha = 0.5 the CI is practically
 # supressed (zero width) and ignored in the assessment.
-x    <- method.B(alpha = 0.5, option = 1, data = rds03,
-                 print = FALSE, details = TRUE)[c(19, 22)]
+x    <- method.B(alpha = 0.5, regulator = "HC", option = 1,
+                 data = rds03, print = FALSE, details = TRUE)[19:20]
 x[1] <- round(x[1], 1) # only one decimal place for HC
 print(x, row.names = FALSE)
 # Should result in:
-# PE(\%)   BE
+# PE(\%)  GMR
 # 124.5 pass}
 }

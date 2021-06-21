@@ -5,17 +5,17 @@
 # option=1: nlme/lme (Satterthwaite's DF)       #
 # option=2: lmerTest/lmer (CONTAIN/Residual DF) #
 #################################################
-method.B <- function(alpha = 0.05, path.in, path.out, file,
+method.B <- function(alpha = 0.05, path.in, path.out = tempdir(), file,
                      set = "", ext, na = ".", sep = ",", dec = ".",
-                     logtrans = TRUE, ola = FALSE, print = TRUE,
-                     details = FALSE, verbose = FALSE, ask = FALSE,
-                     plot.bxp = FALSE, fence = 2, data = NULL,
-                     option = 2) {
+                     logtrans = TRUE, regulator = "EMA", ola = FALSE,
+                     print = TRUE, details = FALSE, verbose = FALSE,
+                     ask = FALSE, plot.bxp = FALSE, fence = 2,
+                     data = NULL, option = 2) {
   exec <- strftime(Sys.time(), usetz=TRUE)
   if (!missing(ext)) ext <- tolower(ext) # case-insensitive
   ret  <- CV.calc(alpha=alpha, path.in=path.in, path.out=path.out,
                   file=file, set=set, ext=ext, na=na, sep=sep,
-                  dec=dec, logtrans=logtrans, ola=ola,
+                  dec=dec, logtrans=logtrans, regulator=regulator, ola=ola,
                   print=print, verbose=verbose, ask=ask,
                   plot.bxp=plot.bxp, fence=fence, data=data)
   logtrans <- ret$logtrans
@@ -36,7 +36,7 @@ method.B <- function(alpha = 0.05, path.in, path.out, file,
   }
   os <- Sys.info()[[1]]   # get OS for line-endings in output (Win: CRLF)
   od <- options("digits") # save options
-  options(digits=12)      # increase digits for anova()
+  options(digits = 12)    # increase digits for anova()
   on.exit(od)             # ensure that options are reset if an error occurs
   if (option == 2) {      # by nlme (Residual DF)
     oc <- options("contrasts") # save options
@@ -45,11 +45,11 @@ method.B <- function(alpha = 0.05, path.in, path.out, file,
     if (logtrans) {       # use the raw data and log-transform internally
       modB <- lme(log(PK) ~ sequence + period + treatment,
                             random = ~1|subject, na.action=na.omit,
-                            data=ret$data)
+                            data = ret$data)
     } else {              # use the already log-transformed data
       modB <- lme(logPK ~ sequence + period + treatment,
                           random = ~1|subject, na.action=na.omit,
-                          data=ret$data)
+                          data = ret$data)
     }
     EMA.B <- summary(modB)
     PE    <- EMA.B$tTable["treatmentT", "Value"]
@@ -61,7 +61,7 @@ method.B <- function(alpha = 0.05, path.in, path.out, file,
       cat("\nData set", paste0(name, ": Method B (option = 2) by lme()"),
           paste0("\n", paste0(rep("\u2500", 41+nchar(name)), collapse="")), "\n")
       if (logtrans) cat("Response: log(PK)\n") else cat("\nResponse: logPK\n")
-      print(anova(modB), digits=6, signif.stars=FALSE)
+      print(anova(modB), digits = 6, signif.stars = FALSE)
       cat("\ntreatment T \u2013 R:\n")
       print(signif(EMA.B$tTable["treatmentT", c(1:2, 4:5)], 5))
       cat(DF, "Degrees of Freedom (equivalent to SAS\u2019 DDFM=CONTAIN)\n\n")
@@ -69,10 +69,10 @@ method.B <- function(alpha = 0.05, path.in, path.out, file,
   } else {              # by lmer/lmerTest (Satterthwaite's or Kenward-Roger DF)
     if (logtrans) {     # use the raw data and log-transform internally
       modB <- lmer(log(PK) ~ sequence + period + treatment + (1|subject),
-                             data=ret$data)
+                             data = ret$data)
     } else {            # use the already log-transformed data
       modB <- lmer(logPK ~ sequence + period + treatment + (1|subject),
-                           data=ret$data)
+                           data = ret$data)
     }
     if (option == 1) {
       EMA.B <- summary(modB, ddf="Satterthwaite")
@@ -106,26 +106,35 @@ method.B <- function(alpha = 0.05, path.in, path.out, file,
     }
   } # end of evaluation by option=2 (lme) or option=1/3 (lmer)
   PE  <- exp(PE)
-  res <- data.frame(ret$type, paste0("B-", option), ret$n, ret$nTT, ret$nRR,
+  res <- data.frame(ret$type, "A", ret$n, ret$nTT, ret$nRR,
                     paste0(ret$Sub.Seq, collapse="|"),
                     paste0(ret$Miss.seq, collapse="|"),
                     paste0(ret$Miss.per, collapse="|"), alpha,
-                    DF, ret$CVwT, ret$CVwR, ret$sw.ratio,
+                    DF, ret$CVwT, ret$CVwR, ret$swT, ret$swR, ret$sw.ratio,
                     ret$sw.ratio.upper, ret$BE1, ret$BE2, CI[1], CI[2],
                     PE, "fail", "fail", "fail", log(CI[2])-log(PE),
                     paste0(ret$ol, collapse="|"), ret$CVwR.rec,
-                    ret$sw.ratio.rec, ret$sw.ratio.rec.upper, ret$BE.rec1,
+                    ret$swR.rec, ret$sw.ratio.rec,
+                    ret$sw.ratio.rec.upper, ret$BE.rec1,
                     ret$BE.rec2, "fail", "fail", "fail",
                     stringsAsFactors=FALSE)
   names(res)<- c("Design", "Method", "n", "nTT", "nRR", "Sub/seq",
                  "Miss/seq", "Miss/per", "alpha", "DF", "CVwT(%)",
-                 "CVwR(%)", "sw.ratio", "sw.ratio.CL", "L(%)",
-                 "U(%)", "CL.lo(%)", "CL.hi(%)", "PE(%)",
+                 "CVwR(%)", "swT", "swR", "sw.ratio", "sw.ratio.CL",
+                 "L(%)", "U(%)", "CL.lo(%)", "CL.hi(%)", "PE(%)",
                  "CI", "GMR", "BE", "log.half-width", "outlier",
-                 "CVwR.rec(%)", "sw.ratio.rec", "sw.ratio.rec.CL",
-                 "L.rec(%)", "U.rec(%)",
+                 "CVwR.rec(%)", "swR.rec", "sw.ratio.rec",
+                 "sw.ratio.rec.CL", "L.rec(%)", "U.rec(%)",
                  "CI.rec", "GMR.rec", "BE.rec")
   if (ret$BE2 == 1.25) { # change column names if not scaling
+    colnames(res)[which(names(res) == "L(%)")] <- "BE.lo(%)"
+    colnames(res)[which(names(res) == "U(%)")] <- "BE.hi(%)"
+  }
+  if (regulator == "HC" & alpha == 0.5) {
+    if (option == 2)
+      stop("Please use option = 1 or option = 3 instead.")
+    res[which(names(res) == "L(%)")] <- 0.80
+    res[which(names(res) == "U(%)")] <- 1.25
     colnames(res)[which(names(res) == "L(%)")] <- "BE.lo(%)"
     colnames(res)[which(names(res) == "U(%)")] <- "BE.hi(%)"
   }
@@ -143,7 +152,7 @@ method.B <- function(alpha = 0.05, path.in, path.out, file,
     res$"L(%)" <- 100*res$"L(%)"
     res$"U(%)" <- 100*res$"U(%)"
   }
-  if (!is.na(res$"CVwR.rec(%)")) { # only if recalculated CVwR
+  if (!is.na(res$"CVwR.rec(%)")) {  # only if recalculated CVwR
     res$"CVwR.rec(%)" <- 100*res$"CVwR.rec(%)"
     if ("BE.rec.lo(%)" %in% names(res)) { # conventional limits
       res$"BE.rec.lo(%)" <- 100*res$"BE.rec.lo(%)"
@@ -158,11 +167,16 @@ method.B <- function(alpha = 0.05, path.in, path.out, file,
   res$"CL.hi(%)" <- 100*res$"CL.hi(%)"
   if (round(res$"CL.lo(%)", 2) >= 100*ret$BE1 &
       round(res$"CL.hi(%)", 2) <= 100*ret$BE2)
-    res$CI <- "pass"  # CI within acceptance range
-  if (round(res$"PE(%)", 2) >= 80 & round(res[["PE(%)"]], 2) <= 125)
-    res$GMR <- "pass" # PE within 80.00-125.00%
+    res$CI <- "pass"    # CI within acceptance range
+  if (!regulator == "HC") {
+    if (round(res$"PE(%)", 2) >= 80 & round(res[["PE(%)"]], 2) <= 125)
+      res$GMR <- "pass" # PE within 80.00-125.00%
+  } else {
+    if (round(res$"PE(%)", 1) >= 80 & round(res[["PE(%)"]], 1) <= 125)
+      res$GMR <- "pass" # PE within 80.00-125.00%
+  }
   if (res$CI == "pass" & res$GMR == "pass")
-    res$BE <- "pass"  # if passing both, conclude BE
+    res$BE <- "pass"    # if passing both, conclude BE
   if (!is.na(res$"CVwR.rec(%)")) {
     if (round(res$"CL.lo(%)", 2) >= 100*ret$BE.rec1 &
         round(res$"CL.hi(%)", 2) <= 100*ret$BE.rec2)
@@ -171,15 +185,21 @@ method.B <- function(alpha = 0.05, path.in, path.out, file,
     if (res$CI.rec == "pass" & res$GMR.rec == "pass")
       res$BE.rec <- "pass"  # if passing both, conclude BE
   }
-  if (details) { # results in default (7 digits) precision
+  if (details) { # results in full precision
     ret <- res
     if (as.character(res$outlier) == "NA") {
       # remove superfluous columns if ola=FALSE or ola=TRUE
       # and no outlier(s) detected
-      ret <- ret[ , !names(ret) %in% c("outlier", "CVwR.rec(%)",
-                                       "sw.ratio.rec", "L.rec(%)",
-                                       "U.rec(%)", "CI.rec",
-                                       "GMR.rec", "BE.rec")]
+      ret <- ret[, !names(ret) %in% c("outlier", "CVwR.rec(%)",
+                                      "swR.rec", "sw.ratio.rec",
+                                      "L.rec(%)", "U.rec(%)",
+                                      "CI.rec", "GMR.rec", "BE.rec",
+                                      "sw.ratio.rec.CL")]
+    }
+    if (regulator == "HC" & alpha == 0.5) {
+      # remove columns for Health Canada (PE of Cmax within 80.0-125.0)
+      ret <- ret[, !names(ret) %in% c("CL.lo(%)", "CL.hi(%)", "CI", "BE",
+                                      "log.half-width")]
     }
     #class(ret) <- "repBE"
     return(ret)
@@ -225,28 +245,38 @@ method.B <- function(alpha = 0.05, path.in, path.out, file,
     }
   }
   # insert DF of treatment difference and alpha into the text generated by CV.calc()
-  cut.pos    <- unlist(gregexpr(pattern="Switching CV", ret$txt))
+  cut.pos    <- unlist(gregexpr(pattern="Regulator", ret$txt))
   left.str   <- substr(ret$txt, 1, cut.pos-1)
   right.str  <- substr(ret$txt, cut.pos, nchar(ret$txt))
   insert.str <- "Degrees of freedom : "
   if (option == 1) insert.str <- paste0(insert.str, sprintf("%7.3f (Satterthwaite)", DF))
   if (option == 2) insert.str <- paste0(insert.str, sprintf("%3i", DF))
   if (option == 3) insert.str <- paste0(insert.str, sprintf("%7.3f (Kenward-Roger)", DF))
-  insert.str <- paste0(insert.str, "\nalpha              :   ", alpha,
-                " (", 100*(1-2*alpha), "% CI)\n")
+  insert.str <- paste0(insert.str, "\nalpha              :   ", alpha)
+  if (!alpha == 0.5) { # Health Canada Cmax
+    insert.str <- paste0(insert.str," (", 100*(1-2*alpha), "% CI)\n")
+  } else {
+    insert.str <- paste0(insert.str," (only PE assessed)\n")
+  }
   txt <- paste0(left.str, insert.str, right.str)
   if (!is.na(res$"CVwR.rec(%)")) {
     txt1 <- paste0("\n\nAssessment based on original CVwR",
                    sprintf(" %.2f%%", res$"CVwR(%)"))
     txt <- paste0(txt, txt1, "\n", paste0(rep("\u2500", nchar(txt1)-2), collapse=""))
   }
-  txt <- paste0(txt,
-                "\nConfidence interval: ", sprintf("%6.2f%% ... %6.2f%%",
-                                                   res$"CL.lo(%)", res$"CL.hi(%)"),
-                "  ", res$CI,
-                "\nPoint estimate     : ", sprintf("%6.2f%%", res$"PE(%)"),
-                "              ", res$GMR,
-                "\nMixed (CI & PE)    :                      ", res$BE, "\n")
+  if (!alpha == 0.5) {
+    txt <- paste0(txt,
+                  "\nConfidence interval: ", sprintf("%6.2f%% ... %6.2f%%",
+                                                     res$"CL.lo(%)", res$"CL.hi(%)"),
+                  "  ", res$CI,
+                  "\nPoint estimate     : ", sprintf("%6.2f%%", res$"PE(%)"),
+                  "              ", res$GMR,
+                  "\nMixed (CI & PE)    :                      ", res$BE, "\n")
+  } else {
+    txt <- paste0(txt,
+                  "\nPoint estimate     : ", sprintf("%6.2f%%", res$"PE(%)"),
+                  "  ", res$GMR, "\n")
+  }
   txt <- paste0(txt,
                 repBE.draw.line(called.from="ABEL", L=ret$BE1, U=ret$BE2,
                                 lo=CI[1], hi=CI[2], PE=PE), "\n")
@@ -265,8 +295,6 @@ method.B <- function(alpha = 0.05, path.in, path.out, file,
     txt <- paste0(txt, "Note: The extra-reference design assumes lacking period effects. ",
                   "The treatment\ncomparison will be biased in the presence of a ",
                   "true period effect.\n")
-  if (res$Design %in% c("TRTR|RTRT|TRRT|RTTR", "TRRT|RTTR|TTRR|RRTT"))
-    txt <- paste0(txt, "Note: Confounded effects; design not recommended.\n")
   if (print & overwrite) {
     res.file <- file(results, open="ab")                        # line endings
     res.str  <- txt                                             # LF (UNIXes, Solaris)

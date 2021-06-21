@@ -2,17 +2,19 @@
 # EMA's 'Method A' (ANOVA)                              #
 # fixed: sequence, subject(sequence), period, treatment #
 #########################################################
-method.A <- function(alpha = 0.05, path.in, path.out, file,
+method.A <- function(alpha = 0.05, path.in, path.out = tempdir(), file,
                      set = "", ext, na = ".", sep = ",", dec = ".",
-                     logtrans = TRUE, ola = FALSE, print = TRUE,
-                     details = FALSE, adjust = FALSE, verbose = FALSE,
-                     ask = FALSE, plot.bxp = FALSE, fence = 2,
-                     data = NULL) {
+                     logtrans = TRUE, regulator = "EMA", ola = FALSE,
+                     print = TRUE, details = FALSE, adjust = FALSE,
+                     verbose = FALSE, ask = FALSE, plot.bxp = FALSE,
+                     fence = 2, data = NULL) {
   exec <- strftime(Sys.time(), usetz=TRUE)
   if (!missing(ext)) ext <- tolower(ext) # case-insensitive
+  if (regulator == "HC")
+    stop("For HC use method.B() option == 1 or option == 2 instead.")
   ret  <- CV.calc(alpha=alpha, path.in=path.in, path.out=path.out,
                   file=file, set=set, ext=ext, na=na, sep=sep,
-                  dec=dec, logtrans=logtrans, ola=ola,
+                  dec=dec, logtrans=logtrans, regulator=regulator, ola=ola,
                   print=print, verbose=verbose, ask=ask,
                   plot.bxp=plot.bxp, fence=fence, data=data)
   results <- paste0(ret$res.file, "_MethodA.txt")
@@ -33,16 +35,27 @@ method.A <- function(alpha = 0.05, path.in, path.out, file,
   on.exit(ow)           # ensure that options are reset if an error occurs
   if (logtrans) {       # use the raw data and log-transform internally
     modA <- lm(log(PK) ~ sequence + subject%in%sequence + period + treatment,
-                         data=ret$data)
+                         data = ret$data)
   } else {              # use the already log-transformed data
     modA <- lm(logPK ~ sequence + subject%in%sequence + period + treatment,
-                       data=ret$data)
+                       data = ret$data)
   }
   if (verbose) {
     name <-  paste0(file, set)
+    len  <- max(27+nchar(name), 35)
     cat(paste0("\nData set ", name, ": Method A by lm()"),
-        paste0("\n", paste0(rep("\u2500", 27+nchar(name)), collapse="")), "\n")
-    print(stats::anova(modA), digits=6, signif.stars=FALSE) # otherwise summary of lmerTest is used
+        paste0("\n", paste0(rep("\u2500", len), collapse = "")), "\n")
+    # change from type I (default as in versions up to 1.0.17)
+    # to type III to get the correct carryover test
+    typeIII <- stats::anova(modA) # otherwise summary of lmerTest is used
+    attr(typeIII, "heading")[1] <- "Type III Analysis of Variance Table\n"
+    MSdenom <- typeIII["sequence:subject", "Mean Sq"]
+    df2     <- typeIII["sequence:subject", "Df"]
+    fvalue  <- typeIII["sequence", "Mean Sq"] / MSdenom
+    df1     <- typeIII["sequence", "Df"]
+    typeIII["sequence", 4] <- fvalue
+    typeIII["sequence", 5] <- pf(fvalue, df1, df2, lower.tail = FALSE)
+    print(typeIII, digits = 6, signif.stars = FALSE)
     cat("\ntreatment T \u2013 R:\n")
     print(signif(summary(modA)$coefficients["treatmentT", ]), 6)
     cat(summary(modA)$df[2], "Degrees of Freedom\n\n")
@@ -54,20 +67,21 @@ method.A <- function(alpha = 0.05, path.in, path.out, file,
                     paste0(ret$Sub.Seq, collapse="|"),
                     paste0(ret$Miss.seq, collapse="|"),
                     paste0(ret$Miss.per, collapse="|"), alpha,
-                    DF, ret$CVwT, ret$CVwR, ret$sw.ratio,
+                    DF, ret$CVwT, ret$CVwR, ret$swT, ret$swR, ret$sw.ratio,
                     ret$sw.ratio.upper, ret$BE1, ret$BE2, CI[1], CI[2],
                     PE, "fail", "fail", "fail", log(CI[2])-log(PE),
                     paste0(ret$ol, collapse="|"), ret$CVwR.rec,
-                    ret$sw.ratio.rec, ret$sw.ratio.rec.upper, ret$BE.rec1,
+                    ret$swR.rec, ret$sw.ratio.rec,
+                    ret$sw.ratio.rec.upper, ret$BE.rec1,
                     ret$BE.rec2, "fail", "fail", "fail",
                     stringsAsFactors=FALSE)
   names(res)<- c("Design", "Method", "n", "nTT", "nRR", "Sub/seq",
                  "Miss/seq", "Miss/per", "alpha", "DF", "CVwT(%)",
-                 "CVwR(%)", "sw.ratio", "sw.ratio.CL", "L(%)",
-                 "U(%)", "CL.lo(%)", "CL.hi(%)", "PE(%)",
+                 "CVwR(%)", "swT", "swR", "sw.ratio", "sw.ratio.CL",
+                 "L(%)", "U(%)", "CL.lo(%)", "CL.hi(%)", "PE(%)",
                  "CI", "GMR", "BE", "log.half-width", "outlier",
-                 "CVwR.rec(%)", "sw.ratio.rec", "sw.ratio.rec.CL",
-                 "L.rec(%)", "U.rec(%)",
+                 "CVwR.rec(%)", "swR.rec", "sw.ratio.rec",
+                 "sw.ratio.rec.CL", "L.rec(%)", "U.rec(%)",
                  "CI.rec", "GMR.rec", "BE.rec")
   if (ret$BE2 == 1.25) { # change column names if necessary
     colnames(res)[which(names(res) == "L(%)")] <- "BE.lo(%)"
@@ -115,15 +129,15 @@ method.A <- function(alpha = 0.05, path.in, path.out, file,
     if (res$CI.rec == "pass" & res$GMR.rec == "pass")
       res$BE.rec <- "pass"  # if passing both, conclude BE
   }
-  if (details) { # results in default (7 digits) precision
+  if (details) { # results in full precision
     ret <- res
     if (as.character(res$outlier) == "NA") {
       # remove superfluous columns if ola=FALSE or ola=TRUE
       # and no outlier(s) detected
       ret <- ret[, !names(ret) %in% c("outlier", "CVwR.rec(%)",
-                                      "sw.ratio.rec", "L.rec(%)",
-                                      "U.rec(%)", "CI.rec",
-                                      "GMR.rec", "BE.rec")]
+                                      "swR.rec", "sw.ratio.rec",
+                                      "L.rec(%)", "U.rec(%)",
+                                      "CI.rec", "GMR.rec", "BE.rec")]
     }
     #class(ret) <- "repBE"
     return(ret)
@@ -169,7 +183,7 @@ method.A <- function(alpha = 0.05, path.in, path.out, file,
     }
   }
   # insert DF and alpha into the text generated by CV.calc()
-  cut.pos    <- unlist(gregexpr(pattern="Switching CV", ret$txt))
+  cut.pos    <- unlist(gregexpr(pattern="Regulator", ret$txt))
   left.str   <- substr(ret$txt, 1, cut.pos-1)
   right.str  <- substr(ret$txt, cut.pos, nchar(ret$txt))
   insert.str <- paste0("Degrees of freedom : ", sprintf("%3i", DF),
@@ -205,8 +219,6 @@ method.A <- function(alpha = 0.05, path.in, path.out, file,
     txt <- paste0(txt, "Note: The extra-reference design assumes lacking period effects. ",
                   "The treatment\ncomparison will be biased in the presence of a ",
                   "true period effect.\n")
-  if (res$Design %in% c("TRTR|RTRT|TRRT|RTTR", "TRRT|RTTR|TTRR|RRTT"))
-    txt <- paste0(txt, "Note: Confounded effects; design not recommended.\n")
   if (print & overwrite) {
     res.file <- file(description=results, open="ab")
     res.str  <- txt                                             # UNIXes LF

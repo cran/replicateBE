@@ -12,10 +12,11 @@
 }
 
 \usage{
-method.A(alpha = 0.05, path.in, path.out, file, set = "", ext,
-         na = ".", sep = ",", dec = ".", logtrans = TRUE, ola = FALSE,
-         print = TRUE, details = FALSE, adjust = FALSE, verbose = FALSE,
-         ask = FALSE, plot.bxp = FALSE, fence = 2, data = NULL)
+method.A(alpha = 0.05, path.in, path.out = tempdir(), file, set = "", ext,
+         na = ".", sep = ",", dec = ".", logtrans = TRUE,
+         regulator = "EMA", ola = FALSE, print = TRUE, details = FALSE,
+         adjust = FALSE, verbose = FALSE, ask = FALSE,
+         plot.bxp = FALSE, fence = 2, data = NULL)
 }
 
 \arguments{
@@ -31,6 +32,7 @@ method.A(alpha = 0.05, path.in, path.out, file, set = "", ext,
   \item{path.out}{
     Path to save the result file if \code{print=TRUE}. You must have
     write-permission to the folder. For simplicity your home folder \verb{"~/"} can be used.\cr
+    If missing, R’s standard temporary folder will be used.\cr
     If a box plot of outliers should be saved (\code{plot.bxp=TRUE}), this path will be
     used as well.
   }
@@ -70,6 +72,11 @@ method.A(alpha = 0.05, path.in, path.out, file, set = "", ext,
     will be internally log-transformed and used in the calculations.
     If \code{FALSE} the already log-transformed data (provided in the
     column \verb{logPK}) will be used in the calculations.
+  }
+  \item{regulator}{
+    Set regulatory conditions. If \code{"EMA"} (default) conventional ABEL will
+    be used. If \code{"GCC"} direct widening to 75.00--133.33\% will be used if
+    \code{CVwR>30\%}.
   }
   \item{ola}{
     Defaults to \code{FALSE}. If \code{TRUE} an outlier analysis based
@@ -158,7 +165,7 @@ method.A(alpha = 0.05, path.in, path.out, file, set = "", ext,
     Any order of columns is acceptable.\cr
     Uppercase and mixed case headers will be internally converted to lowercase headers.
     \itemize{
-      \item \code{subject} must be integer numbers or (any combination of) alphanumerics\cr
+      \item \code{subject} must be integers or (any combination of) alphanumerics\cr
       \verb{[A-Z, a-z, -, _, #, 0-9]}
       \item \code{period} must be integer numbers.
       \item \code{sequence} must be contained in the tested designs (numbers or
@@ -184,7 +191,9 @@ If argument \code{print = FALSE}, returns a data.frame with the elements:
     \code{DF} \tab degrees of freedom of the treatment comparison\cr
     \code{CVwT(\%)} \tab intra-subject coefficient of variation of the test treatment (full replicates only)\cr
     \code{CVwR(\%)} \tab intra-subject coefficient of variation of the reference treatment\cr
-    \code{sw.ratio} \tab ratio of intrasubject variabilities of \code{T} and \code{R} (full replicates only)\cr
+    \code{swT} \tab intra-subject standard deviation of the test treatment (full replicates only)\cr
+    \code{swR} \tab intra-subject standard deviation of the reference treatment\cr
+    \code{sw.ratio} \tab ratio of intra-subject deviations of \code{T} and \code{R} (full replicates only)\cr
     \code{sw.ratio.CL} \tab upper confidence limit of \code{sw.ratio} (full replicates only)
   }
 \itemize{
@@ -214,7 +223,8 @@ If \code{ola = TRUE} and at least one studentized outlier was detected:
   \tabular{ll}{
     \code{outlier} \tab outlying subject(s)\cr
     \code{CVwR.rec(\%)} \tab intra-subject coefficient of variation of \code{R}; recalculated after exclusion of outlier(s)\cr
-    \code{sw.ratio.rec} \tab ratio of intrasubject variabilities of \code{T} and \code{R} after exclusion of outlier(s); full replicates only\cr
+    \code{swR.rec} \tab intra-subject standard deviation of the reference treatment after exclusion of outlier(s)\cr
+    \code{sw.ratio.rec} \tab ratio of intra-subject standard deviations of \code{T} and \code{R} after exclusion of outlier(s); full replicates only\cr
     \code{sw.ratio.rec.CL} \tab upper confidence limit of \code{sw.ratio.rec} (full replicates only)
   }
 \itemize{
@@ -325,6 +335,8 @@ European Medicines Agency, Committee for Medicinal Products for Human Use. \emph
 
 European Medicines Agency. \emph{Clinical pharmacology and pharmacokinetics: questions and answers. 3.1 Which statistical method for the analysis of a bioequivalence study does the Agency recommend? Annex I}. London, 21 September 2016. \href{https://www.ema.europa.eu/en/documents/other/31-annex-i-statistical-analysis-methods-compatible-ema-bioequivalence-guideline_en.pdf}{EMA/582648/2016}
 
+Executive Board of the Health Ministers’ Council for GCC States. \emph{The GCC Guidelines for Bioequivalence.} 30/3/2016. \href{https://old.sfda.gov.sa/en/drug/drug_reg/Regulations/GCC_Guidelines_Bioequivalence.pdf}{Version 2.4}
+
 European Medicines Agency, Committee for Medicinal Products for Human Use. \emph{Guideline on the pharmacokinetic and clinical evaluation of modified release dosage forms.}London, 20 November 2014. \href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-clinical-evaluation-modified-release-dosage-forms_en.pdf}{EMA/CPMP/EWP/280/96 Corr1}
 
 World Health Organization, Prequalification Team: medicines. \emph{Guidance Document: Application of reference-scaled criteria for AUC in bioequivalence studies conducted for submission to PQTm.} Geneva, 22 November 2018. \href{https://extranet.who.int/prequal/sites/default/files/documents/AUC_criteria_November2018.pdf}{open access}
@@ -347,12 +359,11 @@ Labes D, \enc{Schütz}{Schuetz} H. \emph{Inflation of Type I Error in the Evalua
 # print to file.
 # Note: You must adapt the path-variables. The example reads from
 # the data provided by the library. Write-permissions must be granted
-# for 'path.out' in order to save the result file. Here R's
-# temporary folder is used.
+# for 'path.out' in order to save the result file. Here the default
+# (R's temporary folder) is used.
 \donttest{
 path.in  <- paste0(find.package("replicateBE"), "/extdata/")
-method.A(path.in = path.in, path.out = tempdir(), file = "DS",
-set = "01", ext = "csv")
+method.A(path.in = path.in, file = "DS", set = "01", ext = "csv")
 # Should result in:
 #   CVwT               :  35.16\%
 #   swT                :   0.34138
@@ -367,7 +378,7 @@ set = "01", ext = "csv")
 #
 # Internal reference dataset 01 used and results to R's
 # temporary folder. Additional outlier-analyis.
-method.A(ola = TRUE, path.out = tempdir(), data = rds01)
+method.A(ola = TRUE, data = rds01)
 # Should give the same as above. Additionally:
 #   Outlier fence      :  2×IQR of studentized residuals.
 #   Recalculation due to presence of 2 outliers (subj. 45|52)
@@ -389,7 +400,7 @@ print(x, row.names = FALSE)
 # Assess the Type I Error and iteratively adjust alpha if necessary.
 # Not run: due to timing policy of CRAN for examples
 \donttest{
-method.A(adjust = TRUE, path.out = tempdir(), data = rds01)}
+method.A(adjust = TRUE, data = rds01)}
 # Should give in the result file:
 #   Assessment of the empiric Type I Error (TIE); 1,000,000 studies simulated.
 #     TIE not > nominal 0.05; consumer risk is controlled.
@@ -397,7 +408,7 @@ method.A(adjust = TRUE, path.out = tempdir(), data = rds01)}
 # Same with recalculation based on outliers, iteratively adjust alpha
 # if necessary
 \donttest{
-method.A(ola = TRUE, path.out = tempdir(), adjust = TRUE, data = rds01)}
+method.A(ola = TRUE, adjust = TRUE, data = rds01)}
 # Should give in the result file:
 #   Assessment of the empiric Type I Error (TIE) based on original CVwR;
 #   1,000,000 studies simulated.
@@ -409,8 +420,7 @@ method.A(ola = TRUE, path.out = tempdir(), adjust = TRUE, data = rds01)}
 #
 # Repeat the evaluation with the adjusted alpha.
 \donttest{
-method.A(alpha = 0.033416, path.out = tempdir(), ola = TRUE,
-         adjust = TRUE, data = rds01)}
+method.A(alpha = 0.033416, ola = TRUE, adjust = TRUE, data = rds01)}
 # Should give in the result file:
 #   alpha              :   0.033416 (93.3168\% CI)
 #   Confidence interval: 106.16\% ... 126.00\%  pass
