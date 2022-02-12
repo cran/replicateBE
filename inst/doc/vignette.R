@@ -4,21 +4,6 @@ knitr::opts_chunk$set(
   comment = "#"
 )
 
-## ----setup--------------------------------------------------------------------
-library(replicateBE) # attach the library
-
-## ---- echo = FALSE------------------------------------------------------------
-txt <- paste0("Version ", packageVersion("replicateBE"), " built ",
-         packageDate("replicateBE", date.fields = "Built"),
-         " with R ", substr(packageDescription("replicateBE", fields = "Built"), 3, 7))
-if (grepl("900",  as.character(packageVersion("replicateBE")))) {
-  txt <- paste(txt, "\n(development version not on CRAN).")
-} else {
-  txt <- paste0(txt, "\n(stable release on CRAN ",
-           packageDate("replicateBE", date.fields = "Date/Publication"), ").")
-}
-cat(txt)
-
 ## ----eval = FALSE-------------------------------------------------------------
 #  modA <- lm(log(PK) ~ sequence + subject%in%sequence + period + treatment,
 #                       data = data)
@@ -78,6 +63,7 @@ print(res, row.names = FALSE)
 # Rows 3-4: Only 12 eligible subjects in one sequence
 
 ## ----typeIII------------------------------------------------------------------
+library(replicateBE) # attach the library to run example scripts
 method.A(data = rds01, print = FALSE, verbose=TRUE)
 
 ## ----expl2--------------------------------------------------------------------
@@ -112,7 +98,7 @@ ds <- substr(grep("rds", unname(unlist(data(package = "replicateBE"))),
 for (i in seq_along(ds)) {
   A <- method.A(print = FALSE, details = TRUE, data = eval(parse(text = ds[i])))$BE
   B <- method.B(print = FALSE, details = TRUE, data = eval(parse(text = ds[i])))$BE
-  r <- paste0("A ", A, ", B ", B, " \u2013 ")
+  r <- paste0("A ", A, ", B ", B, " - ")
   cat(paste0(ds[i], ":"), r)
   if (A == B) {
     cat("Methods agree.\n")
@@ -140,11 +126,12 @@ df <- rbind(A[cs], B1[cs], B2[cs], B3[cs])
 names(df)[c(1, 3:6, 11)] <- c("Meth.", "L(%)", "U(%)",
                               "CL.lo(%)", "CL.hi(%)", "hw")
 df[, c(2, 11)] <- signif(df[, c(2, 11)], 5)
-print(df[order(df$BE, df$hw, decreasing = c(FALSE, TRUE)), ],
-      row.names = FALSE)
+print(df[order(df$hw, df$BE,decreasing = c(FALSE, TRUE),
+               method = "radix"), ], row.names = FALSE)
 
 ## ----expl5--------------------------------------------------------------------
-### Compare different types with some random data
+# Compare different types with some random data
+set.seed(123456)
 x <- rnorm(48)
 p <- c(25, 50, 75)/100
 q <- matrix(data = "", nrow = 9, ncol = 4,
@@ -157,8 +144,4 @@ for (i in 1:9) {
 q[c(2, 4, 6:8), 4] <- c("SAS, Stata", "SciPy", "Phoenix, Minitab, SPSS",
                         "R, S, MATLAB, Octave, Excel", "Maple")
 print(as.data.frame(q))
-
-## ---- sessioninfo----------------------------------------
-options(width = 59)
-devtools::session_info()
 
