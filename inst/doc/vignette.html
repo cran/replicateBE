@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
     </style>
 
 
+
 <style type="text/css">
   code {
     white-space: pre;
@@ -150,44 +151,53 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 
 <h1 class="title toc-ignore">replicateBE</h1>
-<h3 class="subtitle">Comparative BA-calculation for Average Bioequivalence with Expanding Limits (ABEL)</h3>
+<h3 class="subtitle">Comparative BA-calculation for Average
+Bioequivalence with Expanding Limits (ABEL)</h3>
 
 
 <div id="TOC">
 <ul>
-<li><a href="#intro">Introduction</a></li>
-<li><a href="#methods">Functions</a>
+<li><a href="#intro" id="toc-intro">Introduction</a></li>
+<li><a href="#methods" id="toc-methods">Functions</a>
 <ul>
-<li><a href="#method.a"><code id="methodA">method.A()</code></a></li>
-<li><a href="#method.b"><code id="methodB">method.B()</code></a></li>
-<li><a href="#abe"><code id="ABE">ABE()</code></a></li>
+<li><a href="#method.a" id="toc-method.a"><code id="methodA">method.A()</code></a></li>
+<li><a href="#method.b" id="toc-method.b"><code id="methodB">method.B()</code></a></li>
+<li><a href="#abe" id="toc-abe"><code id="ABE">ABE()</code></a></li>
 </ul></li>
-<li><a href="#hypotheses">Hypotheses</a></li>
-<li><a href="#designs">Tested designs</a>
+<li><a href="#hypotheses" id="toc-hypotheses">Hypotheses</a></li>
+<li><a href="#designs" id="toc-designs">Tested designs</a>
 <ul>
-<li><a href="#per4_full">Four period (full) replicates</a></li>
-<li><a href="#per3_full">Three period (full) replicates</a></li>
-<li><a href="#per2_full">Two period (full) replicate</a></li>
-<li><a href="#per3_part">Three period (partial) replicates</a></li>
+<li><a href="#per4_full" id="toc-per4_full">Four period (full)
+replicates</a></li>
+<li><a href="#per3_full" id="toc-per3_full">Three period (full)
+replicates</a></li>
+<li><a href="#per2_full" id="toc-per2_full">Two period (full)
+replicate</a></li>
+<li><a href="#per3_part" id="toc-per3_part">Three period (partial)
+replicates</a></li>
 </ul></li>
-<li><a href="#data_struct">Data structure</a>
+<li><a href="#data_struct" id="toc-data_struct">Data structure</a>
 <ul>
-<li><a href="#fmt">Format</a></li>
-<li><a href="#incomplete">Incomplete data</a></li>
+<li><a href="#fmt" id="toc-fmt">Format</a></li>
+<li><a href="#incomplete" id="toc-incomplete">Incomplete data</a></li>
 </ul></li>
-<li><a href="#notes">Notes on the methods</a>
+<li><a href="#notes" id="toc-notes">Notes on the methods</a>
 <ul>
-<li><a href="#cv">Estimation of intra-subject variability</a></li>
-<li><a href="#model_struc">Model structure</a></li>
-<li><a href="#BElim">BE limits, PE restriction, rounding issues</a></li>
-<li><a href="#df_comp">Degrees of freedom, comparison of methods</a></li>
-<li><a href="#ola">Outlier analysis</a></li>
+<li><a href="#cv" id="toc-cv">Estimation of intra-subject
+variability</a></li>
+<li><a href="#model_struc" id="toc-model_struc">Model structure</a></li>
+<li><a href="#BElim" id="toc-BElim">BE limits, PE restriction, rounding
+issues</a></li>
+<li><a href="#df_comp" id="toc-df_comp">Degrees of freedom, comparison
+of methods</a></li>
+<li><a href="#ola" id="toc-ola">Outlier analysis</a></li>
 </ul></li>
-<li><a href="#app_out">Applicability, caveats, outlook</a></li>
-<li><a href="#cross">Cross-validation</a></li>
-<li><a href="#contr">Contributors</a></li>
-<li><a href="#license">License</a></li>
-<li><a href="#disclaimer">Disclaimer</a></li>
+<li><a href="#app_out" id="toc-app_out">Applicability, caveats,
+outlook</a></li>
+<li><a href="#cross" id="toc-cross">Cross-validation</a></li>
+<li><a href="#contr" id="toc-contr">Contributors</a></li>
+<li><a href="#license" id="toc-license">License</a></li>
+<li><a href="#disclaimer" id="toc-disclaimer">Disclaimer</a></li>
 </ul>
 </div>
 
@@ -196,63 +206,127 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="intro" class="section level1">
 <h1>Introduction</h1>
-<p>The library provides datasets (internal <code>.rda</code> and in <abbr title="Character Separated Variables">CSV</abbr>-format in <code>/extdata/</code>) which support users in a <a href="https://en.wikipedia.org/wiki/Black-box_testing">black-box</a> performance qualification (PQ) of their software installations.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Users can analyze data imported from <abbr title="Character Separated Variables">CSV</abbr>- and Excel-files.</p>
-<p>The methods<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> given by the European Medicines Agency (EMA) for reference-scaling according to the Guideline on the Inves­tigation of Bioequivalence<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> are implemented. Health Canada’s approach<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> – requiring a mixed-effects model – is approximated by intra-subject contrasts. Direct widening of the limits for <em>C</em><sub>max</sub> (as a special case of <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>) recommended by the <abbr title="Gulf Cooperation Council: Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, the United Arab Emirates.">GCC</abbr><a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> is supported as well.</p>
-<p>Potential influence of outliers on the variability of the reference can be assessed by box plots of studentized and standardized residuals as suggested at a joint <abbr title="European Generic Medicines Association">EGA</abbr>/<abbr title="European Medicines Agency">EMA</abbr> symposium.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a></p>
+<p>The package provides datasets (internal <code>.rda</code> and in
+<abbr title="Character Separated Variables">CSV</abbr>-format in
+<code>/extdata/</code>) which support users in a <a href="https://en.wikipedia.org/wiki/Black-box_testing">black-box</a>
+performance qualification (PQ) of their software installations.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Users can
+analyze data imported from
+<abbr title="Character Separated Variables">CSV</abbr>- and
+Excel-files.</p>
+<p>The methods<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> given by the European Medicines Agency
+(EMA) for reference-scaling according to the Guideline on the
+Inves­tigation of Bioequivalence<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> are implemented. Health Canada’s approach<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> –
+requiring a mixed-effects model – is approximated by intra-subject
+contrasts. Direct widening of the limits for <em>C</em><sub>max</sub>
+(as a special case of
+<abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>)
+recommended by the
+<abbr title="Gulf Cooperation Council: Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, the United Arab Emirates.">GCC</abbr><a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> is
+supported as well.</p>
+<p>Potential influence of outliers on the variability of the reference
+can be assessed by box plots of studentized and standardized residuals
+as suggested at a joint
+<abbr title="European Generic Medicines Association">EGA</abbr>/<abbr title="European Medicines Agency">EMA</abbr>
+symposium.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a></p>
 </div>
 <div id="methods" class="section level1">
 <h1>Functions</h1>
 <div id="method.a" class="section level2">
 <h2><code id="methodA">method.A()</code></h2>
-<p>A linear model of log-transformed <abbr title="pharmacokinetic">PK</abbr> responses and effects<br />
-    <em>sequence</em>, <em>subject</em>(<em>sequence</em>), <em>period</em>, <em>treatment</em><br />
-where all effects are fixed (<em>i.e.</em>, evaluated by an <abbr title="Analysis of Variance">ANOVA</abbr>). Estimated via function <code>lm()</code> of library <code>stats</code>.</p>
+<p>A linear model of log-transformed
+<abbr title="pharmacokinetic">PK</abbr> responses and effects<br />
+    <em>sequence</em>, <em>subject</em>(<em>sequence</em>),
+<em>period</em>, <em>treatment</em><br />
+where all effects are fixed (<em>i.e.</em>, evaluated by an
+<abbr title="Analysis of Variance">ANOVA</abbr>). Estimated via function
+<code>lm()</code> of package <code>stats</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>modA <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(PK) <span class="sc">~</span> sequence <span class="sc">+</span> subject<span class="sc">%in%</span>sequence <span class="sc">+</span> period <span class="sc">+</span> treatment,</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> data)</span></code></pre></div>
 </div>
 <div id="method.b" class="section level2">
 <h2><code id="methodB">method.B()</code></h2>
-<p>A linear model of log-transformed <abbr title="pharmacokinetic">PK</abbr> responses and effects<br />
-    <em>sequence</em>, <em>subject</em>(<em>sequence</em>), <em>period</em>, <em>treatment</em><br />
-where <em>subject</em>(<em>sequence</em>) is a random effect and all others are fixed.<br />
+<p>A linear model of log-transformed
+<abbr title="pharmacokinetic">PK</abbr> responses and effects<br />
+    <em>sequence</em>, <em>subject</em>(<em>sequence</em>),
+<em>period</em>, <em>treatment</em><br />
+where <em>subject</em>(<em>sequence</em>) is a random effect and all
+others are fixed.<br />
 </p>
 <p>Three options are provided</p>
 <ol class="example" style="list-style-type: decimal">
-<li>Estimated via function <code>lmer()</code> of library <code>lmerTest</code>.</li>
+<li>Estimated via function <code>lmer()</code> of package
+<code>lmerTest</code>.</li>
 </ol>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>modB <span class="ot">&lt;-</span> <span class="fu">lmer</span>(<span class="fu">log</span>(PK) <span class="sc">~</span> sequence <span class="sc">+</span> period <span class="sc">+</span> treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>subject),</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                       <span class="at">data =</span> data)</span></code></pre></div>
 <ul>
-<li>Employs Satterthwaite’s approximation<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a> of the degrees of freedom <code>method.B(..., option = 1)</code>, which is equivalent to SAS’ <code>DDFM=SATTERTHWAITE</code>, Phoenix WinNonlin’s <code>Degrees of Freedom Satterthwaite</code>, and Stata’s <code>dfm=Satterthwaite</code>.</li>
+<li>Employs Satterthwaite’s approximation<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a> of the degrees of
+freedom <code>method.B(..., option = 1)</code>, which is equivalent to
+SAS’ <code>DDFM=SATTERTHWAITE</code>, Phoenix WinNonlin’s
+<code>Degrees of Freedom Satterthwaite</code>, and Stata’s
+<code>dfm=Satterthwaite</code>.</li>
 <li>Note that this is the only available approximation in SPSS.</li>
 </ul>
 <ol start="2" class="example" style="list-style-type: decimal">
-<li>Estimated via function <code>lme()</code> of library <code>nlme</code>.</li>
+<li>Estimated via function <code>lme()</code> of package
+<code>nlme</code>.</li>
 </ol>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>modB <span class="ot">&lt;-</span> <span class="fu">lme</span>(<span class="fu">log</span>(PK) <span class="sc">~</span> sequence <span class="sc">+</span>  period <span class="sc">+</span> treatment, <span class="at">random =</span> <span class="sc">~</span><span class="dv">1</span><span class="sc">|</span>subject,</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> data)</span></code></pre></div>
 <ul>
-<li>Employs degrees of freedom equivalent to SAS’ <code>DDFM=CONTAIN</code> (implicitly preferred by the <abbr title="European Medicines Agency">EMA</abbr>), Phoenix WinNonlin’s <code>Degrees of Freedom Residual</code>, STATISTICA’s <code>GLM containment</code>, and Stata’s <code>dfm=anova</code>.</li>
-<li>To comply with the <abbr title="European Medicines Agency">EMA</abbr>’s <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document, <code>method.B(..., option = 2)</code> is the default (<em>i.e.</em>, if the argument <code>option</code> is missing).</li>
+<li>Employs degrees of freedom equivalent to SAS’
+<code>DDFM=CONTAIN</code> (implicitly preferred by the
+<abbr title="European Medicines Agency">EMA</abbr>), Phoenix WinNonlin’s
+<code>Degrees of Freedom Residual</code>, STATISTICA’s
+<code>GLM containment</code>, and Stata’s <code>dfm=anova</code>.</li>
+<li>To comply with the
+<abbr title="European Medicines Agency">EMA</abbr>’s
+<abbr title="Questions &amp; Answers">Q&amp;A</abbr> document,
+<code>method.B(..., option = 2)</code> is the default (<em>i.e.</em>, if
+the argument <code>option</code> is missing).</li>
 </ul>
 <ol start="3" class="example" style="list-style-type: decimal">
-<li>Estimated via function <code>lmer()</code> of library <code>lmerTest</code>.</li>
+<li>Estimated via function <code>lmer()</code> of package
+<code>lmerTest</code>.</li>
 </ol>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>modB <span class="ot">&lt;-</span> <span class="fu">lmer</span>(<span class="fu">log</span>(PK) <span class="sc">~</span> sequence <span class="sc">+</span> period <span class="sc">+</span> treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>subject),</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                       <span class="at">data =</span> data)</span></code></pre></div>
 <ul>
-<li>Employs the Kenward-Roger approximation<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a> of the degrees of freedom <code>method.B(..., option = 3)</code>, which is equivalent to Stata’s <code>dfm=Kenward Roger (EIM)</code> and SAS’ <code>DDFM=KENWARDROGER(FIRSTORDER)</code>, <em>i.e.</em>, based on the <em>expected</em> information matrix.</li>
-<li>Note that SAS with <code>DDFM=KENWARDROGER</code> and JMP calculate Satterthwaite’s [<em>sic</em>] degrees of freedom and apply the Kackar-Harville correction<a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a> <em>i.e.</em>, based on the <em>observed</em> information matrix.</li>
+<li>Employs the Kenward-Roger approximation<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a> of the degrees of
+freedom <code>method.B(..., option = 3)</code>, which is equivalent to
+Stata’s <code>dfm=Kenward Roger (EIM)</code> and SAS’
+<code>DDFM=KENWARDROGER(FIRSTORDER)</code>, <em>i.e.</em>, based on the
+<em>expected</em> information matrix.</li>
+<li>Note that SAS with <code>DDFM=KENWARDROGER</code> and JMP calculate
+Satterthwaite’s [<em>sic</em>] degrees of freedom and apply the
+Kackar-Harville correction<a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a> <em>i.e.</em>, based on the
+<em>observed</em> information matrix.</li>
 </ul>
 </div>
 <div id="abe" class="section level2">
 <h2><code id="ABE">ABE()</code></h2>
-<p>Average Bioequivalence, where the model is identical to <a href="#methodA">Method A</a>. By default the conventional acceptance range of 80.00 – 125.00% is used. Tighter limits (90.00 – 111.11%) for narrow therapeutic index drugs (<abbr title="European Medicines Agency">EMA</abbr> and others) or wider limits (75.00 – 133.33% for <em>C</em><sub>max</sub> according to the guideline of South Africa<a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a>) can be specified by the arguments <code>theta1</code> (lower limit) and/or <code>theta2</code> (upper limit).</p>
+<p>Average Bioequivalence, where the model is identical to <a href="#methodA">Method A</a>. By default the conventional acceptance
+range of 80.00 – 125.00% is used. Tighter limits (90.00 – 111.11%) for
+narrow therapeutic index drugs
+(<abbr title="European Medicines Agency">EMA</abbr> and others) or wider
+limits (75.00 – 133.33% for <em>C</em><sub>max</sub> according to the
+guideline of South Africa<a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a>) can be specified by the arguments
+<code>theta1</code> (lower limit) and/or <code>theta2</code> (upper
+limit).</p>
 </div>
 </div>
 <div id="hypotheses" class="section level1">
 <h1>Hypotheses</h1>
-<p>The hypotheses in the confidence interval inclusion approach are <span class="math display">\[\small{H_{0}: \frac{\mu_\textrm{T}}{\mu_\textrm{R}}\ni \left\{L,U\right\}\:vs\:H_{1}:L&lt;\frac{\mu_\textrm{T}}{\mu_\textrm{R}}&lt;U}\]</span> where the null hypothesis is <strong>in</strong>equivalence. In Average Bioequivalence (ABE) the limits <span class="math inline">\(\small{\left\{L,U\right\}}\)</span> are <em>fixed</em>, whereas in <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr> they can be <a href="#BElim"><em>expanded</em></a> based on the within-subject variability of the reference treatment.</p>
+<p>The hypotheses in the confidence interval inclusion approach are
+<span class="math display">\[\small{H_{0}:
+\frac{\mu_\textrm{T}}{\mu_\textrm{R}}\ni
+\left\{L,U\right\}\:vs\:H_{1}:L&lt;\frac{\mu_\textrm{T}}{\mu_\textrm{R}}&lt;U}\]</span>
+where the null hypothesis is <strong>in</strong>equivalence. In Average
+Bioequivalence (ABE) the limits <span class="math inline">\(\small{\left\{L,U\right\}}\)</span> are
+<em>fixed</em>, whereas in
+<abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>
+they can be <a href="#BElim"><em>expanded</em></a> based on the
+within-subject variability of the reference treatment.</p>
 </div>
 <div id="designs" class="section level1">
 <h1>Tested designs</h1>
@@ -261,7 +335,8 @@ where <em>subject</em>(<em>sequence</em>) is a random effect and all others are 
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>?replicateBE<span class="sc">::</span>data</span></code></pre></div>
 <div id="per4_full" class="section level2">
 <h2>Four period (full) replicates</h2>
-<p>Both the test and the reference treatments are administered at least once.</p>
+<p>Both the test and the reference treatments are administered at least
+once.</p>
 <div id="per4_full_2" class="section level3">
 <h3>Two sequences</h3>
 <p><code>TRTR | RTRT</code><br />
@@ -276,27 +351,45 @@ where <em>subject</em>(<em>sequence</em>) is a random effect and all others are 
 </div>
 <div id="per3_full" class="section level2">
 <h2>Three period (full) replicates</h2>
-<p>The test treatment is administered at least once to ½ of the subjects and the reference treatment at least once to the respective other ½ of the subjects.</p>
+<p>The test treatment is administered at least once to ½ of the subjects
+and the reference treatment at least once to the respective other ½ of
+the subjects.</p>
 <p><code>TRT | RTR</code><br />
 <code>TRR | RTT</code></p>
 </div>
 <div id="per2_full" class="section level2">
 <h2>Two period (full) replicate</h2>
-<p>The test and reference treatments are administered once to ½ of the subjects (for the estimation of the <abbr title="Confidence Interval">CI</abbr>), <em>i.e.</em>, the first group of subjects follows a conventional <abbr title="2-treatment 2-sequence 2-period crossover">2×2×2</abbr> trial. In the second group the test and reference treatments are administered at least once to ¼ of the subjects, respectively (for the estimation of <em>CV</em><sub>wT</sub> and <em>CV</em><sub>wR</sub>).</p>
+<p>The test and reference treatments are administered once to ½ of the
+subjects (for the estimation of the
+<abbr title="Confidence Interval">CI</abbr>), <em>i.e.</em>, the first
+group of subjects follows a conventional
+<abbr title="2-treatment 2-sequence 2-period crossover">2×2×2</abbr>
+trial. In the second group the test and reference treatments are
+administered at least once to ¼ of the subjects, respectively (for the
+estimation of <em>CV</em><sub>wT</sub> and
+<em>CV</em><sub>wR</sub>).</p>
 <p><code>TR | RT | TT | RR</code></p>
-<p>Although supported, Balaam’s design<a href="#fn11" class="footnote-ref" id="fnref11"><sup>11</sup></a> is <em>not recommended</em> due to its poor power characteristics.</p>
+<p>Although supported, Balaam’s design<a href="#fn11" class="footnote-ref" id="fnref11"><sup>11</sup></a> is <em>not
+recommended</em> due to its poor power characteristics.</p>
 </div>
 <div id="per3_part" class="section level2">
 <h2>Three period (partial) replicates</h2>
-<p>The test treatment is administered once and the reference treatment at least once.</p>
+<p>The test treatment is administered once and the reference treatment
+at least once.</p>
 <p><code>TRR | RTR | RRT</code><br />
 <code>TRR | RTR</code></p>
-<p>The latter is the so-called extra-reference design<a href="#fn12" class="footnote-ref" id="fnref12"><sup>12</sup></a> which is <em>not recommended</em> since it is biased in the presence of period effects.</p>
+<p>The latter is the so-called extra-reference design<a href="#fn12" class="footnote-ref" id="fnref12"><sup>12</sup></a> which is <em>not
+recommended</em> since it is biased in the presence of period
+effects.</p>
 </div>
 </div>
 <div id="data_struct" class="section level1">
 <h1>Data structure</h1>
-<p>Columns must have the headers <code>subject</code>, <code>period</code>, <code>sequence</code>, <code>treatment</code>, <code>PK</code>, and/or <code>logPK</code>.<a href="#fn13" class="footnote-ref" id="fnref13"><sup>13</sup></a> Any order of columns is acceptable. Uppercase and mixed case headers will be internally converted to lowercase headers.</p>
+<p>Columns must have the headers <code>subject</code>,
+<code>period</code>, <code>sequence</code>, <code>treatment</code>,
+<code>PK</code>, and/or <code>logPK</code>.<a href="#fn13" class="footnote-ref" id="fnref13"><sup>13</sup></a> Any order of columns
+is acceptable. Uppercase and mixed case headers will be internally
+converted to lowercase headers.</p>
 <div id="fmt" class="section level2">
 <h2>Format</h2>
 <table>
@@ -313,7 +406,9 @@ where <em>subject</em>(<em>sequence</em>) is a random effect and all others are 
 <tbody>
 <tr class="odd">
 <td><code>subject</code></td>
-<td>Integers or any combination of alphanumeric characters (<code>A-Z</code>, <code>a-z</code>, <code>-</code>, <code>_</code>, <code>#</code>, <code>0-9</code>)</td>
+<td>Integers or any combination of alphanumeric characters
+(<code>A-Z</code>, <code>a-z</code>, <code>-</code>, <code>_</code>,
+<code>#</code>, <code>0-9</code>)</td>
 </tr>
 <tr class="even">
 <td><code>period</code></td>
@@ -321,29 +416,40 @@ where <em>subject</em>(<em>sequence</em>) is a random effect and all others are 
 </tr>
 <tr class="odd">
 <td><code>sequence</code></td>
-<td>Numbers or literal sequences not listed in the <a href="#designs">tested designs</a> are not accepted (<em>e.g.</em>, <strong><code>ABAB</code></strong>).</td>
+<td>Numbers or literal sequences not listed in the <a href="#designs">tested designs</a> are not accepted (<em>e.g.</em>,
+<strong><code>ABAB</code></strong>).</td>
 </tr>
 <tr class="even">
 <td><code>treatment</code></td>
-<td>The Test treatment must be coded <strong><code>T</code></strong> and the Reference <strong><code>R</code></strong> (both uppercase).</td>
+<td>The Test treatment must be coded <strong><code>T</code></strong> and
+the Reference <strong><code>R</code></strong> (both uppercase).</td>
 </tr>
 <tr class="odd">
 <td><code>PK</code></td>
-<td>Real positive numbers of <abbr title="pharmacokinetic">PK</abbr> responses.</td>
+<td>Real positive numbers of <abbr title="pharmacokinetic">PK</abbr>
+responses.</td>
 </tr>
 <tr class="even">
 <td><code>logPK</code></td>
-<td>Real numbers of already log<sub>e</sub>-transformed PK responses (optional and rarely needed).</td>
+<td>Real numbers of already log<sub>e</sub>-transformed PK responses
+(optional and rarely needed).</td>
 </tr>
 </tbody>
 </table>
-<p>Relevant data are used for the estimation of <em>CV</em><sub>wR</sub> (and <em>CV</em><sub>wT</sub> in full replicate designs) and BE, <em>i.e.</em>, the data­sets might be different (see the <a href="#setexpl">example below</a>). It is good practice to state that in the Statistical Analysis Plan.</p>
+<p>Relevant data are used for the estimation of <em>CV</em><sub>wR</sub>
+(and <em>CV</em><sub>wT</sub> in full replicate designs) and BE,
+<em>i.e.</em>, the data­sets might be different (see the <a href="#setexpl">example below</a>). It is good practice to state that in
+the Statistical Analysis Plan.</p>
 </div>
 <div id="incomplete" class="section level2">
 <h2>Incomplete data</h2>
 <div id="setCW" class="section level3">
 <h3>Estimation of <em>CV</em><sub>w</sub></h3>
-<p>If a subject drops out from the study in a higher period, data of repeated administrations will still be used for the estimation of <em>CV</em><sub>w</sub>, although data of the other treatment might be missing. Examples for the estimation of <em>CV</em><sub>wR</sub> (missing values are denoted by <code>·</code>):<br />
+<p>If a subject drops out from the study in a higher period, data of
+repeated administrations will still be used for the estimation of
+<em>CV</em><sub>w</sub>, although data of the other treatment might be
+missing. Examples for the estimation of <em>CV</em><sub>wR</sub>
+(missing values are denoted by <code>·</code>):<br />
 </p>
 <p><code>RTRT</code> | <code>RTR·</code><br />
 <code>TRRT</code> | <code>TRR·</code><br />
@@ -353,7 +459,10 @@ where <em>subject</em>(<em>sequence</em>) is a random effect and all others are 
 </div>
 <div id="setBE" class="section level3">
 <h3>Assessment of BE</h3>
-<p>If a subject drops out from the study in a higher period, data with at least one administration of the Test and Reference will be used in the assessment of BE. Examples (missing values are denoted by <code>·</code>):<br />
+<p>If a subject drops out from the study in a higher period, data with
+at least one administration of the Test and Reference will be used in
+the assessment of BE. Examples (missing values are denoted by
+<code>·</code>):<br />
 </p>
 <p><code>TRTR</code> | <code>TRT·</code> or | <code>TR··</code><br />
 <code>RTRT</code> | <code>RTR·</code> or | <code>RT··</code><br />
@@ -369,14 +478,23 @@ where <em>subject</em>(<em>sequence</em>) is a random effect and all others are 
 </div>
 <div id="setexpl" class="section level3">
 <h3>Example of different datasets</h3>
-<p>16 subjects enrolled in the study. In sequence <code>RTRT</code> one dropout in the 2<sup>nd</sup> period and one in the 4<sup>th</sup> period. In sequence <code>TRTR</code> one dropout in the 3<sup>rd</sup> period and one in the 4<sup>th</sup>.<br />
+<p>16 subjects enrolled in the study. In sequence <code>RTRT</code> one
+dropout in the 2<sup>nd</sup> period and one in the 4<sup>th</sup>
+period. In sequence <code>TRTR</code> one dropout in the 3<sup>rd</sup>
+period and one in the 4<sup>th</sup>.<br />
 </p>
 <p><code>1  RTR.    5  RTRT    9  TRTR   13  RTRT</code><br />
 <code>2  RTRT    6  TR··   10  TRTR   14  TRT·</code><br />
 <code>3  RTRT    7  RTRT   11  RTRT   15  TRTR</code><br />
 <code>4  TRTR    8  R···   12  TRTR   16  TRTR</code></p>
 <p>We obtain these datasets:</p>
-<table>
+<table style="width:100%;">
+<colgroup>
+<col width="13%" />
+<col width="21%" />
+<col width="43%" />
+<col width="21%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th align="center">Dataset</th>
@@ -395,7 +513,8 @@ where <em>subject</em>(<em>sequence</em>) is a random effect and all others are 
 <tr class="even">
 <td align="center">#2</td>
 <td>Assessment of BE</td>
-<td>15 who received ≥1 treatment <code>T</code> <em>and</em> ≥1 treatment <code>R</code></td>
+<td>15 who received ≥1 treatment <code>T</code> <em>and</em> ≥1
+treatment <code>R</code></td>
 <td align="center">8</td>
 </tr>
 <tr class="odd">
@@ -406,8 +525,13 @@ where <em>subject</em>(<em>sequence</em>) is a random effect and all others are 
 </tr>
 </tbody>
 </table>
-<p>Datasets #1 and #2 are required for <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>, whereas for <abbr title="Average Bioequivalence">ABE</abbr> only dataset #2 is required.<br />
-Formerly all three were required for the <abbr title="World Health Organization">WHO</abbr>’s reference-scaling of <em>AUC</em> (see <a href="#app_out">below</a>).</p>
+<p>Datasets #1 and #2 are required for
+<abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>,
+whereas for <abbr title="Average Bioequivalence">ABE</abbr> only dataset
+#2 is required.<br />
+Formerly all three were required for the
+<abbr title="World Health Organization">WHO</abbr>’s reference-scaling
+of <em>AUC</em> (see <a href="#app_out">below</a>).</p>
 </div>
 </div>
 </div>
@@ -415,22 +539,43 @@ Formerly all three were required for the <abbr title="World Health Organization"
 <h1>Notes on the methods</h1>
 <div id="cv" class="section level2">
 <h2>Estimation of intra-subject variability</h2>
-<p>The <abbr title="European Medicines Agency">EMA</abbr> proposed a linear model of log-transformed <abbr title="pharmacokinetic">PK</abbr> responses of the reference treatment<br />
-    <em>sequence</em>, <em>subject</em>(<em>sequence</em>), <em>period</em><br />
-where all effects are fixed. Estimated via function <code>lm()</code> of library <code>stats</code>:</p>
+<p>The <abbr title="European Medicines Agency">EMA</abbr> proposed a
+linear model of log-transformed <abbr title="pharmacokinetic">PK</abbr>
+responses of the reference treatment<br />
+    <em>sequence</em>, <em>subject</em>(<em>sequence</em>),
+<em>period</em><br />
+where all effects are fixed. Estimated via function <code>lm()</code> of
+package <code>stats</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>modCV <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(PK) <span class="sc">~</span> sequence <span class="sc">+</span> subject<span class="sc">%in%</span>sequence <span class="sc">+</span> period,</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> data[data<span class="sc">$</span><span class="at">treatment =</span> <span class="st">&quot;R&quot;</span>, ])</span></code></pre></div>
-<p>In full replicate designs the same model is run with <code>data = data[data$treatment = &quot;T&quot;, ]</code> for informational purposes.</p>
-<p>Special conditions for the sample size in three period full replicate designs:</p>
+<p>In full replicate designs the same model is run with
+<code>data = data[data$treatment = &quot;T&quot;, ]</code> for informational
+purposes.</p>
+<p>Special conditions for the sample size in three period full replicate
+designs:</p>
 <blockquote>
-<p><em>The question raised asks if it is possible to use a design where subjects are randomised to receive treatments in the order of TRT or RTR.</em></p>
-<p><em>The CHMP bioequivalence guideline requires that at least 12 patients are needed to provide data for a bioequivalence study to be considered valid, and to estimate all the key parameters. Therefore, if a 3-period replicate design, where treatments are given in the order TRT or RTR, is to be used to justify widening of a confidence interval for C<sub>max</sub> then it is considered that at least 12 patients would need to provide data from the RTR arm. This implies a study with at least 24 patients in total would be required if equal number of subjects are allocated to the 2 treatment sequences.</em></p>
+<p><em>The question raised asks if it is possible to use a design where
+subjects are randomised to receive treatments in the order of TRT or
+RTR.</em></p>
+<p><em>The CHMP bioequivalence guideline requires that at least 12
+patients are needed to provide data for a bioequivalence study to be
+considered valid, and to estimate all the key parameters. Therefore, if
+a 3-period replicate design, where treatments are given in the order TRT
+or RTR, is to be used to justify widening of a confidence interval for
+C<sub>max</sub> then it is considered that at least 12 patients would
+need to provide data from the RTR arm. This implies a study with at
+least 24 patients in total would be required if equal number of subjects
+are allocated to the 2 treatment sequences.</em></p>
 <p>— Q&amp;A document<a href="#fn14" class="footnote-ref" id="fnref14"><sup>14</sup></a></p>
 </blockquote>
-<p>If less than twelve subjects are eligible in sequence <code>RTR</code> of a <code>TRT | RTR</code> design (and in analogy in sequence <code>TRR</code> of a <code>TRR | RTT</code> design), the user is notified about the ‘uncertain’ estimate of <em>CV</em><sub>wR</sub>. However, in a sufficiently powered study such a case is <a href="https://forum.bebac.at/forum_entry.php?id=15139" title="BEBA Forum, 23 July 2015">extremely unlikely</a>.<br />
+<p>If less than twelve subjects are eligible in sequence
+<code>RTR</code> of a <code>TRT | RTR</code> design (and in analogy in
+sequence <code>TRR</code> of a <code>TRR | RTT</code> design), the user
+is notified about the ‘uncertain’ estimate of <em>CV</em><sub>wR</sub>.
+However, in a sufficiently powered study such a case is <a href="https://forum.bebac.at/forum_entry.php?id=15139" title="BEBA Forum, 23 July 2015">extremely unlikely</a>.<br />
 Let us explore the 95% confidence interval of the <em>CV</em>:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate sample sizes of full replicate designs (theta0 0.90,</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># target power 0.80) and CI of the CV with library PowerTOST</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># target power 0.80) and CI of the CV with package PowerTOST</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>CV     <span class="ot">&lt;-</span> <span class="fl">0.30</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;2x2x4&quot;</span>, <span class="st">&quot;2x2x3&quot;</span>) <span class="co"># 4- and 3-period full replicate designs</span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>res    <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">design =</span> <span class="fu">rep</span>(design, <span class="dv">2</span>), <span class="at">n =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="dv">12</span>, <span class="dv">2</span>)),</span>
@@ -466,17 +611,32 @@ Let us explore the 95% confidence interval of the <em>CV</em>:</p>
 <span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co">#   2x2x3 37 71 0.3 0.256 0.362</span></span>
 <span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Rows 1-2: Sample sizes for target power</span></span>
 <span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Rows 3-4: Only 12 eligible subjects in one sequence</span></span></code></pre></div>
-<p>It is incomprehensible why a four period full replicate design is considered by the <abbr title="European Medicines Agency">EMA</abbr> to give a more ‘reliable’ estimate of the <em>CV</em> than a three period full replicate design.</p>
+<p>It is incomprehensible why a four period full replicate design is
+considered by the <abbr title="European Medicines Agency">EMA</abbr> to
+give a more ‘reliable’ estimate of the <em>CV</em> than a three period
+full replicate design.</p>
 </div>
 <div id="model_struc" class="section level2">
 <h2>Model structure</h2>
-<p>The <abbr title="European Medicines Agency">EMA</abbr>’s models assume equal [<em>sic</em>] intra-subject variances of Test and Reference (like in <abbr title="2-treatment 2-sequence 2-period crossover">2×2×2</abbr> trials) – even if proven false in one of the full replicate designs (were <em>both</em> <em>CV</em><sub>wT</sub> and <em>CV</em><sub>wR</sub> can be estimated). Hence, among biostatisticians they are called ‘crippled models’ because the replicative nature of the study is ignored.</p>
-<p>It should be noted that by default <code>ANOVA()</code> produces a ‘Type I’ table, <em>i.e.</em>, all tests are performed against the residual error. Starting with version 1.1.0 ‘Type III’ is employed in order to obtain the correct test for carryover, where <em>subject</em> has to be tested against <em>subject</em>(<em>sequence</em>).<a href="#fn15" class="footnote-ref" id="fnref15"><sup>15</sup></a></p>
+<p>The <abbr title="European Medicines Agency">EMA</abbr>’s models
+assume equal [<em>sic</em>] intra-subject variances of Test and
+Reference (like in
+<abbr title="2-treatment 2-sequence 2-period crossover">2×2×2</abbr>
+trials) – even if proven false in one of the full replicate designs
+(were <em>both</em> <em>CV</em><sub>wT</sub> and
+<em>CV</em><sub>wR</sub> can be estimated). Hence, among
+biostatisticians they are called ‘crippled models’ because the
+replicative nature of the study is ignored.</p>
+<p>It should be noted that by default <code>ANOVA()</code> produces a
+‘Type I’ table, <em>i.e.</em>, all tests are performed against the
+residual error. Starting with version 1.1.0 ‘Type III’ is employed in
+order to obtain the correct test for carryover, where <em>subject</em>
+has to be tested against <em>subject</em>(<em>sequence</em>).<a href="#fn15" class="footnote-ref" id="fnref15"><sup>15</sup></a></p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(replicateBE) <span class="co"># attach the library to run example scripts</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">method.A</span>(<span class="at">data =</span> rds01, <span class="at">print =</span> <span class="cn">FALSE</span>, <span class="at">verbose=</span><span class="cn">TRUE</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Data set DS01: Method A by lm() </span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------- </span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ─────────────────────────────────── </span></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Type III Analysis of Variance Table</span></span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Response: log(PK)</span></span>
@@ -491,16 +651,36 @@ Let us explore the 95% confidence interval of the <em>CV</em>:</p>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co">#   Estimate Std. Error    t value   Pr(&gt;|t|) </span></span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.14547400 0.04650870 3.12788000 0.00200215 </span></span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 217 Degrees of Freedom</span></span></code></pre></div>
-<p>In ‘Type I’ the <em>F</em> value of <em>sequence</em> would be <span class="math inline">\(\small{\frac{0.007652}{0.159995}=0.04783}\)</span> with <span class="math inline">\(\small{p(F_{q=0.04783,\,df_1=1,\,df_2=217})\sim 0.827}\)</span>, whereas in ‘Type III’ it is <span class="math inline">\(\small{\frac{0.007652}{2.855061}=0.00268}\)</span> with <span class="math inline">\(\small{p(F_{q=0.00268,\,df_1=1,\,df_2=75})\sim 0.959}\)</span>.</p>
-<p>The nested structure <em>subject</em>(<em>sequence</em>) of the <a href="#methods">methods</a> leads to an over-specified model.<a href="#fn16" class="footnote-ref" id="fnref16"><sup>16</sup></a> The simple model<br />
-    <em>sequence</em>, <em>subject</em>, <em>period</em>, <em>treatment</em><br />
-gives identical estimates of the residual variance and the treatment effect and hence, its confidence interval.</p>
-<p>The same holds true for the <a href="#cv">EMA’s model</a> to estimate <em>CV</em><sub>wR</sub>. The simple model<br />
+<p>In ‘Type I’ the <em>F</em> value of <em>sequence</em> would be <span class="math inline">\(\small{\frac{0.007652}{0.159995}=0.04783}\)</span>
+with <span class="math inline">\(\small{p(F_{q=0.04783,\,df_1=1,\,df_2=217})\sim
+0.827}\)</span>, whereas in ‘Type III’ it is <span class="math inline">\(\small{\frac{0.007652}{2.855061}=0.00268}\)</span>
+with <span class="math inline">\(\small{p(F_{q=0.00268,\,df_1=1,\,df_2=75})\sim
+0.959}\)</span>.</p>
+<p>The nested structure <em>subject</em>(<em>sequence</em>) of the <a href="#methods">methods</a> leads to an over-specified model.<a href="#fn16" class="footnote-ref" id="fnref16"><sup>16</sup></a> The
+simple model<br />
+    <em>sequence</em>, <em>subject</em>, <em>period</em>,
+<em>treatment</em><br />
+gives identical estimates of the residual variance and the treatment
+effect and hence, its confidence interval.</p>
+<p>The same holds true for the <a href="#cv">EMA’s model</a> to estimate
+<em>CV</em><sub>wR</sub>. The simple model<br />
     <em>subject</em>, <em>period</em><br />
 gives an identical estimate of the residual variance.</p>
-<p>Reference-scaling is acceptable for <em>C</em><sub>max</sub> (immediate release products: <abbr title="Bioequivalence">BE</abbr> Guideline) and <em>C</em><sub>max</sub>, <em>C</em><sub>max,ss</sub>, <em>C</em><sub>τ,ss</sub>, <sub>partial</sub><em>AUC</em> (modified release products<a href="#fn17" class="footnote-ref" id="fnref17"><sup>17</sup></a>). The intention to expand the limits has to be stated in the protocol and – contrary to the <abbr title="U.S. Food and Drug Administration">FDA</abbr>’s <abbr title="Reference Scaled Average Bioequivalence">RSABE</abbr> – a clinical justification provided.</p>
+<p>Reference-scaling is acceptable for <em>C</em><sub>max</sub>
+(immediate release products: <abbr title="Bioequivalence">BE</abbr>
+Guideline) and <em>C</em><sub>max</sub>, <em>C</em><sub>max,ss</sub>,
+<em>C</em><sub>τ,ss</sub>, <sub>partial</sub><em>AUC</em> (modified
+release products<a href="#fn17" class="footnote-ref" id="fnref17"><sup>17</sup></a>). The intention to expand the limits has
+to be stated in the protocol and – contrary to the
+<abbr title="U.S. Food and Drug Administration">FDA</abbr>’s
+<abbr title="Reference Scaled Average Bioequivalence">RSABE</abbr> – a
+clinical justification provided.</p>
 <blockquote>
-<p><em>Those <abbr title="Highly Variable Drug Product">HVDP</abbr> for which a wider difference in C<sub>max</sub> is considered clinically irrelevant based on a sound clinical justification can be assessed with a widened acceptance range. The request for widened interval must be prospectively specified in the protocol.</em></p>
+<p><em>Those <abbr title="Highly Variable Drug Product">HVDP</abbr> for
+which a wider difference in C<sub>max</sub> is considered clinically
+irrelevant based on a sound clinical justification can be assessed with
+a widened acceptance range. The request for widened interval must be
+prospectively specified in the protocol.</em></p>
 <p>— CHMP Bioequivalence Guideline</p>
 </blockquote>
 </div>
@@ -508,34 +688,54 @@ gives an identical estimate of the residual variance.</p>
 <h2>BE limits, PE restriction, rounding issues</h2>
 <p>The limits can be expanded based on <em>CV</em><sub>wR</sub>.</p>
 <ul>
-<li><span class="math inline">\(\small{CV_\textrm{wR}\leq 30\%}\)</span><br />
+<li><span class="math inline">\(\small{CV_\textrm{wR}\leq
+30\%}\)</span><br />
 Lower cap, <em>i.e.</em>, no scaling, conventional limits:<br />
-<span class="math inline">\(\small{\left\{{L,U}\right\} = 80.00 - 125.00\%}\)</span></li>
-<li><span class="math inline">\(\small{30\%&lt;CV_\textrm{wR}\leq 50\%}\)</span> (EMA), <span class="math inline">\(\small{30\%&lt;CV_\textrm{wR}\leq \sim57.4\%}\)</span> (Health Canada)<br />
+<span class="math inline">\(\small{\left\{{L,U}\right\} = 80.00 -
+125.00\%}\)</span></li>
+<li><span class="math inline">\(\small{30\%&lt;CV_\textrm{wR}\leq
+50\%}\)</span> (EMA), <span class="math inline">\(\small{30\%&lt;CV_\textrm{wR}\leq
+\sim57.4\%}\)</span> (Health Canada)<br />
 Expanded limits based on <span class="math inline">\(s_\textrm{wR}\)</span>:<br />
-<span class="math inline">\(\small{\left\{L,\,U\right\} = 100\cdot \exp(\mp 0.760\cdot{s_\textrm{wR}})}\)</span></li>
-<li><span class="math inline">\(\small{CV_\textrm{wR}&gt;50\%}\)</span> (EMA), <span class="math inline">\(\small{CV_\textrm{wR}&gt;\sim57.4\%}\)</span><br />
-Upper cap, <em>i.e.</em>, applying <span class="math inline">\(\small{s^*_\textrm{wR}=\sqrt{\log_{e}(CV_\textrm{cap}^{2}+1)}}\)</span> in the expansion formula or<br />
-<span class="math inline">\(\small{\left\{L,U\right\} = 69.84 - 143.19\%}\)</span> (EMA)<br />
-<span class="math inline">\(\small{\left\{L,U\right\} = 66.7 - 150.0\%}\)</span> (Health Canada).</li>
+<span class="math inline">\(\small{\left\{L,\,U\right\} = 100\cdot
+\exp(\mp 0.760\cdot{s_\textrm{wR}})}\)</span></li>
+<li><span class="math inline">\(\small{CV_\textrm{wR}&gt;50\%}\)</span>
+(EMA), <span class="math inline">\(\small{CV_\textrm{wR}&gt;\sim57.4\%}\)</span><br />
+Upper cap, <em>i.e.</em>, applying <span class="math inline">\(\small{s^*_\textrm{wR}=\sqrt{\log_{e}(CV_\textrm{cap}^{2}+1)}}\)</span>
+in the expansion formula or<br />
+<span class="math inline">\(\small{\left\{L,U\right\} = 69.84 -
+143.19\%}\)</span> (EMA)<br />
+<span class="math inline">\(\small{\left\{L,U\right\} = 66.7 -
+150.0\%}\)</span> (Health Canada).</li>
 </ul>
-<p>The special case recommended by the Gulf Cooperation Council (Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, the United Arab Emirates) is:</p>
+<p>The special case recommended by the Gulf Cooperation Council
+(Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, the United Arab Emirates)
+is:</p>
 <ul>
-<li><span class="math inline">\(\small{CV_\textrm{wR}\leq 30\%}\)</span><br />
+<li><span class="math inline">\(\small{CV_\textrm{wR}\leq
+30\%}\)</span><br />
 Lower cap, <em>i.e.</em>, no scaling, conventional limits:<br />
-<span class="math inline">\(\small{\left\{{L,U}\right\} = 80.00 - 125.00\%}\)</span><br />
+<span class="math inline">\(\small{\left\{{L,U}\right\} = 80.00 -
+125.00\%}\)</span><br />
 </li>
 <li><span class="math inline">\(\small{CV_\textrm{wR}&gt;30\%}\)</span><br />
 Widened limits:<br />
-<span class="math inline">\(\small{\left\{{L,U}\right\} = 75.00 - 133.33\%}\)</span></li>
+<span class="math inline">\(\small{\left\{{L,U}\right\} = 75.00 -
+133.33\%}\)</span></li>
 </ul>
-<p>In reference-scaling a so-called <em>mixed</em> (a.k.a. <em>aggregate</em>) criterion is applied. In order to pass <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>,</p>
+<p>In reference-scaling a so-called <em>mixed</em> (a.k.a.
+<em>aggregate</em>) criterion is applied. In order to pass
+<abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>,</p>
 <ul>
-<li>the 90% confidence interval has to lie entirely within the acceptance range <span class="math inline">\(\small{\left\{L,U\right\}}\)</span> <em>and</em></li>
+<li>the 90% confidence interval has to lie entirely within the
+acceptance range <span class="math inline">\(\small{\left\{L,U\right\}}\)</span>
+<em>and</em></li>
 <li>the point estimate (PE) has to lie within 80.00 – 125.00%.</li>
 </ul>
-<p>To avoid discontinuities due to double rounding, expanded limits are calculated in full numeric precision and only the confidence interval is rounded according to the guidelines.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate limits with library PowerTOST</span></span>
+<p>To avoid discontinuities due to double rounding, expanded limits are
+calculated in full numeric precision and only the confidence interval is
+rounded according to the guidelines.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate limits with package PowerTOST</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>CV <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">50</span>, <span class="fl">57.382</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">CV =</span> CV,</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">reg1 =</span> <span class="st">&quot;EMA&quot;</span>, <span class="at">L1 =</span> <span class="cn">NA</span>, <span class="at">U1 =</span> <span class="cn">NA</span>, <span class="at">cap1 =</span> <span class="st">&quot;&quot;</span>,</span>
@@ -569,15 +769,42 @@ Widened limits:<br />
 </div>
 <div id="df_comp" class="section level2">
 <h2>Degrees of freedom, comparison of methods</h2>
-<p>The SAS code provided by the <abbr title="European Medicines Agency">EMA</abbr> in the <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document does not specify how the degrees of freedom should be calculated in Method B. Hence, the default in <code>PROC MIXED</code>, namely <code>DDFM=CONTAIN</code> is applied, <em>i.e.</em>, <code>method.B(..., option = 2</code>). For incomplete data (missing periods) Satterthwaite’s approximation of the degrees of freedom, <em>i.e.</em>, <code>method.B(..., option = 1)</code> or Kenward-Roger <code>method.B(..., option = 3)</code> might be a better choice – if stated as such in the <abbr title="Statistical Analysis Plan">SAP</abbr>.<br />
-For background about approximations in different software packages see the electronic <a href="https://static-content.springer.com/esm/art%3A10.1208%2Fs12248-020-0427-6/MediaObjects/12248_2020_427_MOESM1_ESM.docx">Supplementary Material</a> of Schütz <em>et al.</em></p>
-<p>The <abbr title="European Medicines Agency">EMA</abbr> seemingly prefers Method A:</p>
+<p>The SAS code provided by the
+<abbr title="European Medicines Agency">EMA</abbr> in the
+<abbr title="Questions &amp; Answers">Q&amp;A</abbr> document does not
+specify how the degrees of freedom should be calculated in Method B.
+Hence, the default in <code>PROC MIXED</code>, namely
+<code>DDFM=CONTAIN</code> is applied, <em>i.e.</em>,
+<code>method.B(..., option = 2</code>). For incomplete data (missing
+periods) Satterthwaite’s approximation of the degrees of freedom,
+<em>i.e.</em>, <code>method.B(..., option = 1)</code> or Kenward-Roger
+<code>method.B(..., option = 3)</code> might be a better choice – if
+stated as such in the
+<abbr title="Statistical Analysis Plan">SAP</abbr>.<br />
+For background about approximations in different software packages see
+the electronic <a href="https://static-content.springer.com/esm/art%3A10.1208%2Fs12248-020-0427-6/MediaObjects/12248_2020_427_MOESM1_ESM.docx">Supplementary
+Material</a> of Schütz <em>et al.</em></p>
+<p>The <abbr title="European Medicines Agency">EMA</abbr> seemingly
+prefers Method A:</p>
 <blockquote>
-<p><em>A simple linear mixed model, which assumes identical within-subject variability (Method B), may be acceptable as long as results obtained with the two methods do not lead to different regulatory decisions. However, in borderline cases […] additional analysis using Method A might be required.</em></p>
-<p>— <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document (January 2011 and later revisions)</p>
+<p><em>A simple linear mixed model, which assumes identical
+within-subject variability (Method B), may be acceptable as long as
+results obtained with the two methods do not lead to different
+regulatory decisions. However, in borderline cases […] additional
+analysis using Method A might be required.</em></p>
+<p>— <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document (January
+2011 and later revisions)</p>
 </blockquote>
-<p>The half-width of the confidence interval in log-scale allows a comparison of methods (B <em>v.s.</em> A) where a higher value <em>might</em> point towards a more conservative decision.<a href="#fn18" class="footnote-ref" id="fnref18"><sup>18</sup></a> In the provided example datasets – with one exception – the conclusion of <abbr title="Bioequivalence">BE</abbr> (based on the mixed criterion) agrees between Method A and Method B.<br />
-However, for the highly incomplete dataset 14 Method A is <em>liberal</em> (passing by <abbr title="Analysis of Variance">ANOVA</abbr> but failing by the random effects model):</p>
+<p>The half-width of the confidence interval in log-scale allows a
+comparison of methods (B <em>v.s.</em> A) where a higher value
+<em>might</em> point towards a more conservative decision.<a href="#fn18" class="footnote-ref" id="fnref18"><sup>18</sup></a> In the
+provided example datasets – with one exception – the conclusion of
+<abbr title="Bioequivalence">BE</abbr> (based on the mixed criterion)
+agrees between Method A and Method B.<br />
+However, for the highly incomplete dataset 14 Method A is
+<em>liberal</em> (passing by
+<abbr title="Analysis of Variance">ANOVA</abbr> but failing by the
+random effects model):</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare Method B acc. to the GL with Method A for all reference data sets.</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ds <span class="ot">&lt;-</span> <span class="fu">substr</span>(<span class="fu">grep</span>(<span class="st">&quot;rds&quot;</span>, <span class="fu">unname</span>(<span class="fu">unlist</span>(<span class="fu">data</span>(<span class="at">package =</span> <span class="st">&quot;replicateBE&quot;</span>))),</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">value =</span> <span class="cn">TRUE</span>), <span class="at">start =</span> <span class="dv">1</span>, <span class="at">stop =</span> <span class="dv">5</span>)</span>
@@ -641,31 +868,58 @@ However, for the highly incomplete dataset 14 Method A is <em>liberal</em> (pas
 <span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(df)[<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span><span class="sc">:</span><span class="dv">6</span>, <span class="dv">11</span>)] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Meth.&quot;</span>, <span class="st">&quot;L(%)&quot;</span>, <span class="st">&quot;U(%)&quot;</span>,</span>
 <span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>                              <span class="st">&quot;CL.lo(%)&quot;</span>, <span class="st">&quot;CL.hi(%)&quot;</span>, <span class="st">&quot;hw&quot;</span>)</span>
 <span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>df[, <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">11</span>)] <span class="ot">&lt;-</span> <span class="fu">signif</span>(df[, <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">11</span>)], <span class="dv">5</span>)</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(df[<span class="fu">order</span>(df<span class="sc">$</span>hw, df<span class="sc">$</span>BE,<span class="at">decreasing =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">TRUE</span>),</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(df[<span class="fu">order</span>(df<span class="sc">$</span>hw, df<span class="sc">$</span>BE, <span class="at">decreasing =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">TRUE</span>),</span>
 <span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>               <span class="at">method =</span> <span class="st">&quot;radix&quot;</span>), ], <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="co">#  Meth.     DF  L(%)   U(%) CL.lo(%) CL.hi(%) PE(%)   CI  GMR   BE      hw</span></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co">#      B 197.44 69.84 143.19    69.21   121.27 91.62 fail pass fail 0.28043</span></span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="co">#      B 192.00 69.84 143.19    69.21   121.28 91.62 fail pass fail 0.28046</span></span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co">#      B 195.99 69.84 143.19    69.21   121.28 91.62 fail pass fail 0.28052</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co">#      A 197.44 69.84 143.19    69.21   121.27 91.62 fail pass fail 0.28043</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="co">#      A 192.00 69.84 143.19    69.21   121.28 91.62 fail pass fail 0.28046</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co">#      A 195.99 69.84 143.19    69.21   121.28 91.62 fail pass fail 0.28052</span></span>
 <span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="co">#      A 192.00 69.84 143.19    69.99   123.17 92.85 pass pass pass 0.28261</span></span></code></pre></div>
-<p>All variants of Method B are more conservative than Method A. Before rounding the confidence interval, <code>option = 2</code> with 192 degrees of freedom would be more conservative (lower <abbr title="Confidence Limit">CL</abbr> 69.21029) than <code>option = 1</code> with 197.44 degrees of freedom (lower <abbr title="Confidence Limit">CL</abbr> 69.21286). Given the incompleteness of this data set (four missings in period 2, twelve in period 3, and 19 in period 4), Satterthwaite’s or Kenward-Roger degrees of freedom are probably the better choice.</p>
-<p>For detailed comparisons between methods based on simulations see the electronic <a href="https://static-content.springer.com/esm/art%3A10.1208%2Fs12248-020-0427-6/MediaObjects/12248_2020_427_MOESM1_ESM.docx">Supplementary Material</a> of Schütz <em>et al.</em></p>
+<p>All variants of Method B are more conservative than Method A. Before
+rounding the confidence interval, <code>option = 2</code> with 192
+degrees of freedom would be more conservative (lower
+<abbr title="Confidence Limit">CL</abbr> 69.21029) than
+<code>option = 1</code> with 197.44 degrees of freedom (lower
+<abbr title="Confidence Limit">CL</abbr> 69.21286). Given the
+incompleteness of this data set (four missings in period 2, twelve in
+period 3, and 19 in period 4), Satterthwaite’s or Kenward-Roger degrees
+of freedom are probably the better choice.</p>
+<p>For detailed comparisons between methods based on simulations see the
+electronic <a href="https://static-content.springer.com/esm/art%3A10.1208%2Fs12248-020-0427-6/MediaObjects/12248_2020_427_MOESM1_ESM.docx">Supplementary
+Material</a> of Schütz <em>et al.</em></p>
 </div>
 <div id="ola" class="section level2">
 <h2>Outlier analysis</h2>
 <p>It is an open issue how outliers should be handled.</p>
 <blockquote>
-<p><em>The applicant should justify that the calculated intra-subject variability is a reliable estimate and that it is not the result of outliers.</em></p>
+<p><em>The applicant should justify that the calculated intra-subject
+variability is a reliable estimate and that it is not the result of
+outliers.</em></p>
 <p>— CHMP Bioequivalence Guideline</p>
 </blockquote>
-<p>The author ‘suggested’ box plots as a mere joke [<em>sic</em>] at the <abbr title="European Generic Medicines Association">EGA</abbr>/<abbr title="European Medicines Agency">EMA</abbr> symposium, being aware of their non­para­metric nature and the <abbr title="European Medicines Agency">EMA</abbr>’s reluctance towards robust methods. Alas, this <em>joke</em> was included in the <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document.</p>
+<p>The author ‘suggested’ box plots as a mere joke [<em>sic</em>] at the
+<abbr title="European Generic Medicines Association">EGA</abbr>/<abbr title="European Medicines Agency">EMA</abbr>
+symposium, being aware of their non­para­metric nature and the
+<abbr title="European Medicines Agency">EMA</abbr>’s reluctance towards
+robust methods. Alas, this <em>joke</em> was included in the
+<abbr title="Questions &amp; Answers">Q&amp;A</abbr> document.</p>
 <blockquote>
-<p><em>[…] a study could be acceptable if the bioequivalence requirements are met both including the outlier subject (using the scaled average bioequivalence approach and the within-subject CV with this subject) and after exclusion of the outlier (using the within-subject CV without this subject).</em></p>
-<p><em>An outlier test is not an expectation of the medicines agencies but outliers could be shown by a box plot. This would allow the medicines agencies to compare the data between them.</em></p>
+<p><em>[…] a study could be acceptable if the bioequivalence
+requirements are met both including the outlier subject (using the
+scaled average bioequivalence approach and the within-subject CV with
+this subject) and after exclusion of the outlier (using the
+within-subject CV without this subject).</em></p>
+<p><em>An outlier test is not an expectation of the medicines agencies
+but outliers could be shown by a box plot. This would allow the
+medicines agencies to compare the data between them.</em></p>
 <p>— EGA/EMA Q&amp;A document</p>
 </blockquote>
-<p>With the additional argument <code>ola = TRUE</code> in <code>method.A()</code> and <code>method.B()</code> an outlier analysis is performed, where the default <code>fence = 2</code>.<a href="#fn19" class="footnote-ref" id="fnref19"><sup>19</sup></a></p>
-<p>Results differ slightly depending on software’s algorithms to calculate the median and quartiles. Example with the nine types implemented in R:</p>
+<p>With the additional argument <code>ola = TRUE</code> in
+<code>method.A()</code> and <code>method.B()</code> an outlier analysis
+is performed, where the default <code>fence = 2</code>.<a href="#fn19" class="footnote-ref" id="fnref19"><sup>19</sup></a></p>
+<p>Results differ slightly depending on software’s algorithms to
+calculate the median and quartiles. Example with the nine types
+implemented in R:</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare different types with some random data</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123456</span>)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">48</span>)</span>
@@ -692,9 +946,12 @@ However, for the highly incomplete dataset 14 Method A is <em>liberal</em> (pas
 <span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="co"># type = 9   -0.74569 0.06358    0.97009</span></span></code></pre></div>
 <p>Note the differences even in the medians.</p>
 <ul>
-<li>Box plots of studentized<a href="#fn20" class="footnote-ref" id="fnref20"><sup>20</sup></a> and standarized<a href="#fn21" class="footnote-ref" id="fnref21"><sup>21</sup></a> model residuals are constructed.<a href="#fn22" class="footnote-ref" id="fnref22"><sup>22</sup></a></li>
-<li>Potential outliers are flagged based on the argument <code>fence</code> provided by the user.</li>
-<li>With the additional argument <code>verbose = TRUE</code> detailed information is shown in the console.</li>
+<li>Box plots of studentized<a href="#fn20" class="footnote-ref" id="fnref20"><sup>20</sup></a> and standarized<a href="#fn21" class="footnote-ref" id="fnref21"><sup>21</sup></a> model residuals are
+constructed.<a href="#fn22" class="footnote-ref" id="fnref22"><sup>22</sup></a></li>
+<li>Potential outliers are flagged based on the argument
+<code>fence</code> provided by the user.</li>
+<li>With the additional argument <code>verbose = TRUE</code> detailed
+information is shown in the console.</li>
 </ul>
 <p>Example for the reference dataset 01:</p>
 <pre><code>Outlier analysis
@@ -711,7 +968,13 @@ However, for the highly incomplete dataset 14 Method A is <em>liberal</em> (pas
  subject sequence stand.res
       45     RTRT -5.246293
       52     RTRT  3.214663</code></pre>
-<p>If based on <em>studentized</em> residuals outliers are detected, additionally to the expanded limits based on the complete reference data, tighter limits are calculated based on <em>CV</em><sub>wR</sub> after exclusion of outliers and <abbr title="Bioequivalence">BE</abbr> assessed with the new limits. Note that <em>standardized</em> residuals are given for informational purposes only and <em>not</em> used for exclusion of outliers.</p>
+<p>If based on <em>studentized</em> residuals outliers are detected,
+additionally to the expanded limits based on the complete reference
+data, tighter limits are calculated based on <em>CV</em><sub>wR</sub>
+after exclusion of outliers and <abbr title="Bioequivalence">BE</abbr>
+assessed with the new limits. Note that <em>standardized</em> residuals
+are given for informational purposes only and <em>not</em> used for
+exclusion of outliers.</p>
 <p>Output for the reference dataset 01 (re-ordered for clarity):</p>
 <pre><code>CVwR               :  46.96% (reference-scaling applicable)
 swR                :   0.44645
@@ -735,18 +998,43 @@ Confidence interval: pass
 Point estimate     : pass
 Mixed (CI &amp; PE)    : pass
          ╟┼─────────────────────┼───────■────────◊─────────■─╢</code></pre>
-<p>Note that the <abbr title="Point Estimate">PE</abbr> and its <abbr title="Confidence Interval">CI</abbr> are not affected since the entire data are used and therefore, these values not reported in the second analysis (only the conclusion of the assessment).<br />
-The ‘ASCII line plot’ is given for informational purposes since its resolution is only ~0.5%. The filled squares <code>■</code> are the lower and upper 90% confidence limits, the rhombus <code>◊</code> the point estimate, the vertical lines <code>│</code> at 100% and the <abbr title="Point Estimate">PE</abbr> restriction (80.00 – 125.00%), and the double vertical lines <code>║</code> the expanded limits. The <abbr title="Point Estimate">PE</abbr> and <abbr title="Confidence Interval">CI</abbr> take pre­se­dence over other symbols. In this case the upper limit of the <abbr title="Point Estimate">PE</abbr> restriction is not visible.<br />
-Since both analyses arrive at the same conclusion, the study should be acceptable according to the <abbr title="Questions &amp; Answers">Q&amp;A</abbr> document.</p>
-<p>An assessment of outliers is <em>not</em> required for Brazil’s ANVISA.</p>
-<p>Health Canada<a href="#fn23" class="footnote-ref" id="fnref23"><sup>23</sup></a> accepts exclusion of outliers (irrespective of the treatment) if</p>
+<p>Note that the <abbr title="Point Estimate">PE</abbr> and its
+<abbr title="Confidence Interval">CI</abbr> are not affected since the
+entire data are used and therefore, these values not reported in the
+second analysis (only the conclusion of the assessment).<br />
+The ‘ASCII line plot’ is given for informational purposes since its
+resolution is only ~0.5%. The filled squares <code>■</code> are the
+lower and upper 90% confidence limits, the rhombus <code>◊</code> the
+point estimate, the vertical lines <code>│</code> at 100% and the
+<abbr title="Point Estimate">PE</abbr> restriction (80.00 – 125.00%),
+and the double vertical lines <code>║</code> the expanded limits. The
+<abbr title="Point Estimate">PE</abbr> and
+<abbr title="Confidence Interval">CI</abbr> take pre­se­dence over other
+symbols. In this case the upper limit of the
+<abbr title="Point Estimate">PE</abbr> restriction is not visible.<br />
+Since both analyses arrive at the same conclusion, the study should be
+acceptable according to the
+<abbr title="Questions &amp; Answers">Q&amp;A</abbr> document.</p>
+<p>An assessment of outliers is <em>not</em> required for Brazil’s
+ANVISA.</p>
+<p>Health Canada<a href="#fn23" class="footnote-ref" id="fnref23"><sup>23</sup></a> accepts exclusion of outliers
+(irrespective of the treatment) if</p>
 <ol style="list-style-type: decimal">
-<li>the procedure is stated in the protocol and followed <em>before</em> the results of the analysis are summarised into confidence intervals (<em>i.e.</em>, regardless of whether results meet the standard),</li>
-<li>no more than 5% of the subjects may be considered to be outliers, unless there are 20 or fewer subjects, in which case only one subject may be removed,</li>
-<li>it is recommended that a simple outlier test such as a studentised residual being greater than 3 be used, and</li>
-<li>the subject in question should be identified as an outlier for all parameters, for either the test or reference product, upon which the bioequivalence decision is to be based.</li>
+<li>the procedure is stated in the protocol and followed <em>before</em>
+the results of the analysis are summarised into confidence intervals
+(<em>i.e.</em>, regardless of whether results meet the standard),</li>
+<li>no more than 5% of the subjects may be considered to be outliers,
+unless there are 20 or fewer subjects, in which case only one subject
+may be removed,</li>
+<li>it is recommended that a simple outlier test such as a studentised
+residual being greater than 3 be used, and</li>
+<li>the subject in question should be identified as an outlier for all
+parameters, for either the test or reference product, upon which the
+bioequivalence decision is to be based.</li>
 </ol>
-<p>Note that assessing of outliers of the <span style="text-decoration:underline">test treatment</span> is currently not supported. In order to comply with conditions #1 and #3 use (here for the internal dataset 01 with a fence narrower than the default):<br />
+<p>Note that assessing of outliers of the <span style="text-decoration:underline">test treatment</span> is currently not
+supported. In order to comply with conditions #1 and #3 use (here for
+the internal dataset 01 with a fence narrower than the default):<br />
 </p>
 <pre><code>B1 &lt;- method.B(ola = TRUE, verbose = TRUE, print = FALSE,
                details = FALSE, fence = 1.5, data = rds01,
@@ -770,30 +1058,81 @@ Since both analyses arrive at the same conclusion, the study should be acceptabl
       45     RTRT -5.246293
       46     TRTR -1.694330
       52     RTRT  3.214663</code></pre>
-<p>There are 73 subjects in the dataset with two treatments of the reference. Hence, while observing condition #2, we are allowed to delete 73×5%~3 outliers. Delete subject 45 and 52 with residuals outside ±3 from the dataset. Run the analysis on the reduced dataset as usual.</p>
-<p>It must be mentioned that Health Canada’s approach might increase the Type I Error.<a href="#fn24" class="footnote-ref" id="fnref24"><sup>24</sup></a></p>
+<p>There are 73 subjects in the dataset with two treatments of the
+reference. Hence, while observing condition #2, we are allowed to delete
+73×5%~3 outliers. Delete subject 45 and 52 with residuals outside ±3
+from the dataset. Run the analysis on the reduced dataset as usual.</p>
+<p>It must be mentioned that Health Canada’s approach might increase the
+Type I Error.<a href="#fn24" class="footnote-ref" id="fnref24"><sup>24</sup></a></p>
 </div>
 </div>
 <div id="app_out" class="section level1">
 <h1>Applicability, caveats, outlook</h1>
-<p>The <abbr title="European Medicines Agency">EMA</abbr>’s approach of reference-scaling for highly variable drugs / drug products is currently recommended in other jurisdictions as well (<em>i.e.</em>, the <abbr title="World Health Organization">WHO</abbr>; the <abbr title="Association of Southeast Asian Nations">ASEAN</abbr>, Australia, Brazil, Chile, the East African Community, Egypt, the <abbr title="Eurasian Economic Union">EEU</abbr>, and New Zealand). Health Canada accepts <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr> only for <em>AUC</em> with an upper cap of scaling at ~57.4% (maximum expansion to 66.7 – 150.0%) and <em>might</em> require a true mixed-effects model. Whether Method B is acceptable is unclear.</p>
-<p>If degrees of freedom are approximated (Satterthwaite, Kenward-Roger), the <abbr title="Statistical Analysis Plan">SAP</abbr> and statistical report should always specify which method will be / was used (see <a href="#method.b">above</a>) in order to allow recalculation in other software. This package uses the <em>expected</em> information matrix.<a href="#fn25" class="footnote-ref" id="fnref25"><sup>25</sup></a></p>
-<p>The estimated <em>CV</em><sub>wR</sub> is always uncertain (the degree of uncertainty depends on the <em>CV</em><sub>wR</sub> itself, the design, and – to a minor degree – the sample size), which might lead to an inflation of the type I error (<em>i.e.</em>, if <abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr> is falsely applied although the <em>true</em> – but unknown – <em>CV</em><sub>wR</sub> is lower than its estimate).<a href="#fn26" class="footnote-ref" id="fnref26"><sup>26</sup></a><sup>,</sup> <a href="#fn27" class="footnote-ref" id="fnref27"><sup>27</sup></a><br />
-Use the optional argument <code>method.A(..., adjust = TRUE)</code> to iteratively adjust <span class="math inline">\(\small{\alpha}\)</span> to control the type I error.<a href="#fn28" class="footnote-ref" id="fnref28"><sup>28</sup></a><br />
-If you want to apply the most conservative approach of Molins <em>et al.</em><a href="#fn29" class="footnote-ref" id="fnref29"><sup>29</sup></a> (which corrects for <em>CV</em><sub>wR</sub> 30% instead of the observed one), get the data frame of results with<br />
+<p>The <abbr title="European Medicines Agency">EMA</abbr>’s approach of
+reference-scaling for highly variable drugs / drug products is currently
+recommended in other jurisdictions as well (<em>i.e.</em>, the
+<abbr title="World Health Organization">WHO</abbr>; the
+<abbr title="Association of Southeast Asian Nations">ASEAN</abbr>,
+Australia, Belarus, Brazil, Chile, the East African Community, Egypt,
+the <abbr title="Eurasian Economic Union">EEU</abbr>, New Zealand, and
+the Russian Federation). Health Canada accepts
+<abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>
+only for <em>AUC</em> with an upper cap of scaling at ~57.4% (maximum
+expansion to 66.7 – 150.0%) and <em>might</em> require a true
+mixed-effects model. Whether Method B is acceptable is unclear.</p>
+<p>If degrees of freedom are approximated (Satterthwaite,
+Kenward-Roger), the <abbr title="Statistical Analysis Plan">SAP</abbr>
+and statistical report should always specify which method will be / was
+used (see <a href="#method.b">above</a>) in order to allow recalculation
+in other software. This package uses the <em>expected</em> information
+matrix.<a href="#fn25" class="footnote-ref" id="fnref25"><sup>25</sup></a></p>
+<p>The estimated <em>CV</em><sub>wR</sub> is always uncertain (the
+degree of uncertainty depends on the <em>CV</em><sub>wR</sub> itself,
+the design, and – to a minor degree – the sample size), which might lead
+to an inflation of the type I error (<em>i.e.</em>, if
+<abbr title="Average Bioequivalence with Expanding Limits">ABEL</abbr>
+is falsely applied although the <em>true</em> – but unknown –
+<em>CV</em><sub>wR</sub> is lower than its estimate).<a href="#fn26" class="footnote-ref" id="fnref26"><sup>26</sup></a><sup>,</sup> <a href="#fn27" class="footnote-ref" id="fnref27"><sup>27</sup></a><br />
+Use the optional argument <code>method.A(..., adjust = TRUE)</code> to
+iteratively adjust <span class="math inline">\(\small{\alpha}\)</span>
+to control the type I error.<a href="#fn28" class="footnote-ref" id="fnref28"><sup>28</sup></a><br />
+If you want to apply the most conservative approach of Molins <em>et
+al.</em><a href="#fn29" class="footnote-ref" id="fnref29"><sup>29</sup></a> (which corrects for
+<em>CV</em><sub>wR</sub> 30% instead of the observed one), get the data
+frame of results with<br />
 <code>  x &lt;- method.A(..., details = TRUE, print = FALSE)</code>.<br />
-Adjust <span class="math inline">\(\small{\alpha}\)</span> in library <a href="https://cran.r-project.org/package=PowerTOST">PowerTOST</a> and call <code>method.A()</code> again:<br />
+Adjust <span class="math inline">\(\small{\alpha}\)</span> in package <a href="https://cran.r-project.org/package=PowerTOST">PowerTOST</a> and
+call <code>method.A()</code> again:<br />
 <code>  design &lt;- &quot;2x2x4&quot; # your design</code><br />
 <code>  n      &lt;- as.integer(strsplit(x[[6]], &quot;|&quot;, fixed = TRUE)[[1]]) # subjects / sequence</code><br />
 <code>  y      &lt;- PowerTOST::scABEL.ad(CV = 0.3, n = n, design = design, print = FALSE)</code><br />
 <code>  method.A(..., alpha = y$alpha.adj)</code></p>
-<p>In a pilot phase the <abbr title="World Health Organization">WHO</abbr> accepted reference-scaling for <em>AUC</em> (four period full replicate studies were mandatory in order to assess the vari­ability associated with each product).<a href="#fn30" class="footnote-ref" id="fnref30"><sup>30</sup></a> It was not evident how this assessment should have been done.<br />
-In <abbr title="Population Bioequivalence">PBE</abbr> and <abbr title="Individual Bioequivalence">IBE</abbr> the <em>s</em><sub>wT</sub>/<em>s</em><sub>wR</sub> ratio was assessed and ‘similar’ variability concluded for a ratio within 0.667 – 1.500. However, the power of comparing variabilities in a study designed to compare means is low. This was one of the reasons why <abbr title="Population Bioequivalence">PBE</abbr> and <abbr title="Individual Bioequivalence">IBE</abbr> were not implemented in regulatory practice. An alternative approach is given by the <abbr title="U.S. Food and Drug Administration">FDA</abbr> where variabilities are considered ‘comparable’ if the upper confidence limit of <em>σ</em><sub>wT</sub>/<em>σ</em><sub>wR</sub> is ≤2.5.<a href="#fn31" class="footnote-ref" id="fnref31"><sup>31</sup></a><br />
-However, in 2021 the requirement of comparing variabilities was lifted by the WHO.<a href="#fn32" class="footnote-ref" id="fnref32"><sup>32</sup></a></p>
+<p>In a pilot phase the
+<abbr title="World Health Organization">WHO</abbr> accepted
+reference-scaling for <em>AUC</em> (four period full replicate studies
+were mandatory in order to assess the vari­ability associated with each
+product).<a href="#fn30" class="footnote-ref" id="fnref30"><sup>30</sup></a> It was not evident how this assessment
+should have been done.<br />
+In <abbr title="Population Bioequivalence">PBE</abbr> and
+<abbr title="Individual Bioequivalence">IBE</abbr> the
+<em>s</em><sub>wT</sub>/<em>s</em><sub>wR</sub> ratio was assessed and
+‘similar’ variability concluded for a ratio within 0.667 – 1.500.
+However, the power of comparing variabilities in a study designed to
+compare means is low. This was one of the reasons why
+<abbr title="Population Bioequivalence">PBE</abbr> and
+<abbr title="Individual Bioequivalence">IBE</abbr> were not implemented
+in regulatory practice. An alternative approach is given by the
+<abbr title="U.S. Food and Drug Administration">FDA</abbr> where
+variabilities are considered ‘comparable’ if the upper confidence limit
+of <em>σ</em><sub>wT</sub>/<em>σ</em><sub>wR</sub> is ≤2.5.<a href="#fn31" class="footnote-ref" id="fnref31"><sup>31</sup></a><br />
+However, in 2021 the requirement of comparing variabilities was lifted
+by the WHO.<a href="#fn32" class="footnote-ref" id="fnref32"><sup>32</sup></a></p>
 </div>
 <div id="cross" class="section level1">
 <h1>Cross-validation</h1>
-<p>Results of all reference datasets agree with ones obtained in SAS (9.4), Phoenix WinNonlin (6.4–8.1), STATISTICA (13), SPSS (22.0), Stata (15.0), and JMP (10.0.2).</p>
+<p>Results of all reference datasets agree with ones obtained in SAS
+(9.4), Phoenix WinNonlin (6.4–8.3.4), STATISTICA (13), SPSS (22.0),
+Stata (15.0), and JMP (10.0.2).</p>
 </div>
 <div id="contr" class="section level1">
 <h1>Contributors</h1>
@@ -805,48 +1144,133 @@ However, in 2021 the requirement of comparing variabilities was lifted by the WH
 </div>
 <div id="license" class="section level1">
 <h1>License</h1>
-<p><a href="https://cran.r-project.org/web/licenses/GPL-3" title="GNU General Public License, Version 3">GPL-3</a> Helmut Schütz 2022-02-12</p>
+<p><a href="https://cran.r-project.org/web/licenses/GPL-3" title="GNU General Public License, Version 3">GPL-3</a> Helmut Schütz
+2022-05-02</p>
 </div>
 <div id="disclaimer" class="section level1">
 <h1>Disclaimer</h1>
-<p>Program offered for Use without any Guarantees and Absolutely No Warranty. No Liability is accepted for any Loss and Risk to Public Health Resulting from Use of this R-Code.</p>
+<p>Program offered for Use without any Guarantees and Absolutely No
+Warranty. No Liability is accepted for any Loss and Risk to Public
+Health Resulting from Use of this R-Code.</p>
 </div>
 <div class="footnotes footnotes-end-of-document">
 <hr />
 <ol>
-<li id="fn1"><p>Schütz H, Tomashevskiy M, Labes D, Shitova A, González-de la Parra M, Fuglsang A. <em>Reference Data­sets for Studies in a Replicate Design Intended for Average Bioequivalence with Expanding Limits.</em> AAPS J. 2020; 22(2): Article 44. <a href="https://doi.org/10.1208/s12248-020-0427-6">doi:10.1208/s12248-020-0427-6</a>.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
-<li id="fn2"><p>European Medicines Agency. EMA/582648/2016 <a href="https://www.ema.europa.eu/en/documents/other/31-annex-i-statistical-analysis-methods-compatible-ema-bioequivalence-guideline_en.pdf"><em>Annex I.</em></a> London. 21 September 2016.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
-<li id="fn3"><p>European Medicines Agency. Committee for Medicinal Products for Human Use. <em>Guideline on the Investigation of Bioequivalence.</em> <a href="https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf">CPMP/EWP/QWP/1401/98 Rev. 1/Corr **</a>. London. 20 January 2010.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
-<li id="fn4"><p>Health Canada. <a href="https://www.canada.ca/content/dam/hc-sc/documents/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/conduct-analysis-comparative.pdf">Guidance Document. Conduct and Analysis of Comparative Bioavailability Studies.</a> Ottawa. 2018/06/08.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
-<li id="fn5"><p>Executive Board of the Health Ministers’ Council for GCC States. <em>The GCC Guidelines for Bioequivalence.</em> <a href="https://www.sfda.gov.sa/sites/default/files/2021-10/GCC_Guidelines_Bioequivalence.pdf">Version 3.0</a>. May 2021.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
-<li id="fn6"><p>European Generic Medicines Association. <em>Revised EMA Bioequivalence Guideline. <a href="https://www.medicinesforeurope.com/wp-content/uploads/2016/03/EGA_BEQ_QA_WEB_QA_1_32.pdf">Questions &amp; Answers.</a></em> 3<sup>rd</sup> EGA Symposium on Bioequivalence. London. 1 June 2010.<a href="#fnref6" class="footnote-back">↩︎</a></p></li>
-<li id="fn7"><p>Satterthwaite FE. <em>An Approximate Distribution of Estimates of Variance Components.</em> Biometr Bull. 1946; 2(6): 110–4. <a href="https://doi.org/10.2307/3002019">doi:10.2307/3002019</a>.<a href="#fnref7" class="footnote-back">↩︎</a></p></li>
-<li id="fn8"><p>Kenward MG, Roger JH. <em>Small Sample Inference for Fixed Effects from Restricted Maximum Likelihood.</em> Biometrics. 1997; 53(3): 983–97. <a href="https://doi.org/10.2307/2533558">doi:10.2307/2533558</a>.<a href="#fnref8" class="footnote-back">↩︎</a></p></li>
-<li id="fn9"><p>Kackar RN, Harville DA. <em>Approximations for Standard Errors of Estimators of Fixed and Random Effects in Mixed Linear Models.</em> J Am Stat Assoc. 1984; 79(388): 853–62. <a href="https://doi.org/10.1080/01621459.1984.10477102">doi:10.1080/01621459.1984.10477102</a>.<a href="#fnref9" class="footnote-back">↩︎</a></p></li>
-<li id="fn10"><p>Medicines Control Council. Registration of Medicines. <a href="https://www.sahpra.org.za/wp-content/uploads/2020/01/61de452d2.06_Biostudies_Jun15_v6.pdf"><em>Biostudies.</em></a> Pretoria. June 2015.<a href="#fnref10" class="footnote-back">↩︎</a></p></li>
-<li id="fn11"><p>Balaam LN. <em>A Two-Period Design with t<sup>2</sup> Experimental Units.</em> Biometrics. 1968; 24(1): 61–73. <a href="https://doi.org/10.2307/2528460">doi:10.2307/2528460</a>.<a href="#fnref11" class="footnote-back">↩︎</a></p></li>
-<li id="fn12"><p>Chow, SC, Shao J, Wang H. <em>Individual bioequivalence testing under 2×3 designs.</em> Stat Med. 2002; 21(5): 629–48. <a href="https://doi.org/10.1002/sim.1056">doi:10.1002/sim.1056</a>.<a href="#fnref12" class="footnote-back">↩︎</a></p></li>
-<li id="fn13"><p>Napierian logarithm (base <em>e</em>). The decadic logarithm (base 10) is not supported).<a href="#fnref13" class="footnote-back">↩︎</a></p></li>
-<li id="fn14"><p>European Medicines Agency. <em>Questions &amp; Answers: positions on specific questions addressed to the Pharmacokinetics Working Party (PKWP).</em> <a href="https://www.ema.europa.eu/en/documents/scientific-guideline/questions-answers-positions-specific-questions-addressed-pharmacokinetics-working-party_en.pdf">EMA/618604/2008</a>. London. June 2015 (and later revisons).<a href="#fnref14" class="footnote-back">↩︎</a></p></li>
-<li id="fn15"><p>Chow S-C, Liu J-p. <em>Design and Analysis of Bioavailability and Bioequivalence Studies.</em> Boca Raton: CRC Press; 3<sup>rd</sup> ed. 2009. Chapter 3.2.<a href="#fnref15" class="footnote-back">↩︎</a></p></li>
-<li id="fn16"><p>It contradicts the law of parsimony. Such a nesting is superfluous since in comparative bioavailability trials subjects are uniquely coded. If, say, subject <code>1</code> is allocated to sequence <code>TRTR</code> there is not yet ‘another’ subject <code>1</code> allocated to sequence <code>RTRT</code>. This explains the many lines in SAS <code>PROC GML</code> given with <code>.</code> and in Phoenix WinNonlin as <code>not estimable</code>.<a href="#fnref16" class="footnote-back">↩︎</a></p></li>
-<li id="fn17"><p>European Medicines Agency, Committee for Medicinal Products for Human Use. <em>Guideline on the pharmacokinetic and clinical evaluation of modified release dosage forms.</em> <a href="https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-clinical-evaluation-modified-release-dosage-forms_en.pdf">EMA/CHMP/EWP/280/96.</a> London. 20 November 2014.<a href="#fnref17" class="footnote-back">↩︎</a></p></li>
+<li id="fn1"><p>Schütz H, Tomashevskiy M, Labes D, Shitova A,
+González-de la Parra M, Fuglsang A. <em>Reference Data­sets for Studies
+in a Replicate Design Intended for Average Bioequivalence with Expanding
+Limits.</em> AAPS J. 2020; 22(2): Article 44. <a href="https://doi.org/10.1208/s12248-020-0427-6">doi:10.1208/s12248-020-0427-6</a>.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>European Medicines Agency. EMA/582648/2016 <a href="https://www.ema.europa.eu/en/documents/other/31-annex-i-statistical-analysis-methods-compatible-ema-bioequivalence-guideline_en.pdf"><em>Annex
+I.</em></a> London. 21 September 2016.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>European Medicines Agency. Committee for Medicinal
+Products for Human Use. <em>Guideline on the Investigation of
+Bioequivalence.</em> <a href="https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf">CPMP/EWP/QWP/1401/98
+Rev. 1/Corr **</a>. London. 20 January 2010.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p>Health Canada. <a href="https://www.canada.ca/content/dam/hc-sc/documents/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/conduct-analysis-comparative.pdf">Guidance
+Document. Conduct and Analysis of Comparative Bioavailability
+Studies.</a> Ottawa. 2018/06/08.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>Executive Board of the Health Ministers’ Council for GCC
+States. <em>The GCC Guidelines for Bioequivalence.</em> <a href="https://www.sfda.gov.sa/sites/default/files/2021-10/GCC_Guidelines_Bioequivalence.pdf">Version
+3.0</a>. May 2021.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn6"><p>European Generic Medicines Association. <em>Revised EMA
+Bioequivalence Guideline. <a href="https://www.medicinesforeurope.com/wp-content/uploads/2016/03/EGA_BEQ_QA_WEB_QA_1_32.pdf">Questions
+&amp; Answers.</a></em> 3<sup>rd</sup> EGA Symposium on Bioequivalence.
+London. 1 June 2010.<a href="#fnref6" class="footnote-back">↩︎</a></p></li>
+<li id="fn7"><p>Satterthwaite FE. <em>An Approximate Distribution of
+Estimates of Variance Components.</em> Biometr Bull. 1946; 2(6): 110–4.
+<a href="https://doi.org/10.2307/3002019">doi:10.2307/3002019</a>.<a href="#fnref7" class="footnote-back">↩︎</a></p></li>
+<li id="fn8"><p>Kenward MG, Roger JH. <em>Small Sample Inference for
+Fixed Effects from Restricted Maximum Likelihood.</em> Biometrics. 1997;
+53(3): 983–97. <a href="https://doi.org/10.2307/2533558">doi:10.2307/2533558</a>.<a href="#fnref8" class="footnote-back">↩︎</a></p></li>
+<li id="fn9"><p>Kackar RN, Harville DA. <em>Approximations for Standard
+Errors of Estimators of Fixed and Random Effects in Mixed Linear
+Models.</em> J Am Stat Assoc. 1984; 79(388): 853–62. <a href="https://doi.org/10.1080/01621459.1984.10477102">doi:10.1080/01621459.1984.10477102</a>.<a href="#fnref9" class="footnote-back">↩︎</a></p></li>
+<li id="fn10"><p>Medicines Control Council. Registration of Medicines.
+<a href="https://www.sahpra.org.za/wp-content/uploads/2020/01/61de452d2.06_Biostudies_Jun15_v6.pdf"><em>Biostudies.</em></a>
+Pretoria. June 2015.<a href="#fnref10" class="footnote-back">↩︎</a></p></li>
+<li id="fn11"><p>Balaam LN. <em>A Two-Period Design with t<sup>2</sup>
+Experimental Units.</em> Biometrics. 1968; 24(1): 61–73. <a href="https://doi.org/10.2307/2528460">doi:10.2307/2528460</a>.<a href="#fnref11" class="footnote-back">↩︎</a></p></li>
+<li id="fn12"><p>Chow, SC, Shao J, Wang H. <em>Individual bioequivalence
+testing under 2×3 designs.</em> Stat Med. 2002; 21(5): 629–48. <a href="https://doi.org/10.1002/sim.1056">doi:10.1002/sim.1056</a>.<a href="#fnref12" class="footnote-back">↩︎</a></p></li>
+<li id="fn13"><p>Napierian logarithm (base <em>e</em>). The decadic
+logarithm (base 10) is not supported).<a href="#fnref13" class="footnote-back">↩︎</a></p></li>
+<li id="fn14"><p>European Medicines Agency. <em>Questions &amp; Answers:
+positions on specific questions addressed to the Pharmacokinetics
+Working Party (PKWP).</em> <a href="https://www.ema.europa.eu/en/documents/scientific-guideline/questions-answers-positions-specific-questions-addressed-pharmacokinetics-working-party_en.pdf">EMA/618604/2008</a>.
+London. June 2015 (and later revisons).<a href="#fnref14" class="footnote-back">↩︎</a></p></li>
+<li id="fn15"><p>Chow S-C, Liu J-p. <em>Design and Analysis of
+Bioavailability and Bioequivalence Studies.</em> Boca Raton: CRC Press;
+3<sup>rd</sup> ed. 2009. Chapter 3.2.<a href="#fnref15" class="footnote-back">↩︎</a></p></li>
+<li id="fn16"><p>It contradicts the law of parsimony. Such a nesting is
+superfluous since in comparative bioavailability trials subjects are
+uniquely coded. If, say, subject <code>1</code> is allocated to sequence
+<code>TRTR</code> there is not yet ‘another’ subject <code>1</code>
+allocated to sequence <code>RTRT</code>. This explains the many lines in
+SAS <code>PROC GML</code> given with <code>.</code> and in Phoenix
+WinNonlin as <code>not estimable</code>.<a href="#fnref16" class="footnote-back">↩︎</a></p></li>
+<li id="fn17"><p>European Medicines Agency, Committee for Medicinal
+Products for Human Use. <em>Guideline on the pharmacokinetic and
+clinical evaluation of modified release dosage forms.</em> <a href="https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-clinical-evaluation-modified-release-dosage-forms_en.pdf">EMA/CHMP/EWP/280/96.</a>
+London. 20 November 2014.<a href="#fnref17" class="footnote-back">↩︎</a></p></li>
 <li id="fn18"><p>Of course, only if point estimates are identical.<a href="#fnref18" class="footnote-back">↩︎</a></p></li>
-<li id="fn19"><p>The fences are given by the lowest value still within <em>m</em>×IQR of the lower quartile, and the highest value still within <em>m</em>×IQR of the upper quartile, where IQR is the interquartile range (difference between the 3<sup>rd</sup> and 1<sup>st</sup> quartiles). Values outside fences are considered outliers. Decreasing the multiplier <em>m</em> to <em>e.g.</em>, 1.5 might result in many outliers, whereas increasing the multiplier in only a few.<br />
-Different methods exist to calculate quartiles (nine ‘types’ are available in R, where the default is <code>type = 7</code>). R’s default is used by S, MATLAB, Octave, and Excel. Phoenix WinNonlin, Minitab, and SPSS use <code>type = 6</code>, ScyPy uses <code>type = 4</code>, whereas the default in SAS and Stata is <code>type = 2</code> (though others are available as well).<a href="#fnref19" class="footnote-back">↩︎</a></p></li>
-<li id="fn20"><p><em>Externally</em> studentized: <span class="math inline">\(\small{\widehat{\sigma}_{(i)}^2={1 \over n-m-1}\sum_{\begin{smallmatrix}j = 1\\j \ne i\end{smallmatrix}}^n \widehat{\varepsilon\,}_j^{\,2}}\)</span><a href="#fnref20" class="footnote-back">↩︎</a></p></li>
-<li id="fn21"><p><em>Internally</em> studentized: <span class="math inline">\(\small{\widehat{\sigma}^2={1 \over n-m}\sum_{j=1}^n \widehat{\varepsilon\,}_j^{\,2}}\)</span><a href="#fnref21" class="footnote-back">↩︎</a></p></li>
-<li id="fn22"><p>Both are available in SAS and R, whereas only the latter in <em>e.g.</em>, Phoenix WinNonlin. In general the former are slightly more restrictive. Which one will be used has to be stated in the <abbr title="Statistical Analysis Plan">SAP</abbr>.<a href="#fnref22" class="footnote-back">↩︎</a></p></li>
-<li id="fn23"><p>Health Canada. <a href="https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/conduct-analysis-comparative.html#a234"><em>Guidance Document: Conduct and Analysis of Comparative Bioavailability Studies. 2.3.5. Outlier Consideration.</em></a> Ottawa. 2018/06/08.<a href="#fnref23" class="footnote-back">↩︎</a></p></li>
-<li id="fn24"><p>Fuglsang A. <em>Increased Patient’s Risk Associated with the Canadian Bioequivalence Guidance Due to Outlier Removal.</em> Ther Innov Reg Sci. 2022; 56: 168–72. <a href="https://doi.org/10.1007/s43441-021-00344-2">doi:10.1007/s43441-021-00344-2</a>.<a href="#fnref24" class="footnote-back">↩︎</a></p></li>
-<li id="fn25"><p>For Satterthwaite only available in Phoenix WinNonlin, SPSS, and Stata; as an option in SAS by <code>SCORING=1</code>. For Kenward-Roger default option <code>EIM</code> in Stata. The <em>observed</em> information matrix is the only available in JMP and default <code>SCORING=0</code> in SAS; option <code>OIM</code> in Stata.<a href="#fnref25" class="footnote-back">↩︎</a></p></li>
-<li id="fn26"><p>Wonnemann M, Frömke C, Koch A. <em>Inflation of the Type I Error: Investigations on Regulatory Recom­mendations for Bioequivalence of Highly Variable Drugs.</em> Pharm Res. 2015; 32(1): 135–43. <a href="https://doi.org/10.1007/s11095-014-1450-z">doi:10.1007/s11095-014-1450-z</a>.<a href="#fnref26" class="footnote-back">↩︎</a></p></li>
-<li id="fn27"><p>Muñoz J, Alcaide D, Ocaña J. <em>Consumer’s risk in the EMA and FDA regulatory approaches for bioequivalence in highly variable drugs.</em> Stat Med. 2016; 35(12): 1933–43. <a href="https://doi.org/10.1002/sim.6834">doi:10.1002/sim.6834</a>.<a href="#fnref27" class="footnote-back">↩︎</a></p></li>
-<li id="fn28"><p>Labes D, Schütz H. <em>Inflation of Type I Error in the Evaluation of Scaled Average Bioequivalence, and a Method for its Control.</em> Pharm Res. 2016; 33(11): 2805–14. <a href="https://doi.org/10.1007/s11095-016-2006-1">doi:10.1007/s11095-016-2006-1</a>.<a href="#fnref28" class="footnote-back">↩︎</a></p></li>
-<li id="fn29"><p>Molins E, Cobo E, Ocaña J. <em>Two-Stage Designs Versus European Scaled Average Designs in Bioequivalence Studies for Highly Variable Drugs: Which to Choose?</em> Stat Med. 2017: 36(30); 4777–88. <a href="https://doi.org/10.1002/sim.7452">doi:10.1002/sim.7452</a>.<a href="#fnref29" class="footnote-back">↩︎</a></p></li>
-<li id="fn30"><p>World Health Organization. <a href="https://extranet.who.int/pqweb/sites/default/files/documents/AUC_criteria_November2018.pdf"><em>Application of reference-scaled criteria for AUC in bioequivalence studies conducted for submission to PQTm.</em></a> Geneva. 22 November 2018.<a href="#fnref30" class="footnote-back">↩︎</a></p></li>
-<li id="fn31"><p>U.S. Food and Drug Administration, Center for Drug Evaluation and Research. <a href="https://www.fda.gov/media/87219/Download"><em>Draft Guidance for Industry. Bioequivalence Studies with Pharmacokinetic Endpoints for Drugs Submitted Under an ANDA.</em></a> August 2021.<a href="#fnref31" class="footnote-back">↩︎</a></p></li>
-<li id="fn32"><p>World Health Organization. <a href="https://extranet.who.int/pqweb/sites/default/files/documents/AUC_criteria_July2021.pdf"><em>Application of reference-scaled criteria for AUC in bioequivalence studies conducted for submission to PQT/MED.</em></a> Geneva. 02 July 2021.<a href="#fnref32" class="footnote-back">↩︎</a></p></li>
+<li id="fn19"><p>The fences are given by the lowest value still within
+<em>m</em>×IQR of the lower quartile, and the highest value still within
+<em>m</em>×IQR of the upper quartile, where IQR is the interquartile
+range (difference between the 3<sup>rd</sup> and 1<sup>st</sup>
+quartiles). Values outside fences are considered outliers. Decreasing
+the multiplier <em>m</em> to <em>e.g.</em>, 1.5 might result in many
+outliers, whereas increasing the multiplier in only a few.<br />
+Different methods exist to calculate quartiles (nine ‘types’ are
+available in R, where the default is <code>type = 7</code>). R’s default
+is used by S, MATLAB, Octave, and Excel. Phoenix WinNonlin, Minitab, and
+SPSS use <code>type = 6</code>, ScyPy uses <code>type = 4</code>,
+whereas the default in SAS and Stata is <code>type = 2</code> (though
+others are available as well).<a href="#fnref19" class="footnote-back">↩︎</a></p></li>
+<li id="fn20"><p><em>Externally</em> studentized: <span class="math inline">\(\small{\widehat{\sigma}_{(i)}^2={1 \over
+n-m-1}\sum_{\begin{smallmatrix}j = 1\\j \ne i\end{smallmatrix}}^n
+\widehat{\varepsilon\,}_j^{\,2}}\)</span><a href="#fnref20" class="footnote-back">↩︎</a></p></li>
+<li id="fn21"><p><em>Internally</em> studentized: <span class="math inline">\(\small{\widehat{\sigma}^2={1 \over
+n-m}\sum_{j=1}^n \widehat{\varepsilon\,}_j^{\,2}}\)</span><a href="#fnref21" class="footnote-back">↩︎</a></p></li>
+<li id="fn22"><p>Both are available in SAS and R, whereas only the
+latter in <em>e.g.</em>, Phoenix WinNonlin. In general the former are
+slightly more restrictive. Which one will be used has to be stated in
+the <abbr title="Statistical Analysis Plan">SAP</abbr>.<a href="#fnref22" class="footnote-back">↩︎</a></p></li>
+<li id="fn23"><p>Health Canada. <a href="https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/conduct-analysis-comparative.html#a234"><em>Guidance
+Document: Conduct and Analysis of Comparative Bioavailability Studies.
+2.3.5. Outlier Consideration.</em></a> Ottawa. 2018/06/08.<a href="#fnref23" class="footnote-back">↩︎</a></p></li>
+<li id="fn24"><p>Fuglsang A. <em>Increased Patient’s Risk Associated
+with the Canadian Bioequivalence Guidance Due to Outlier Removal.</em>
+Ther Innov Reg Sci. 2022; 56: 168–72. <a href="https://doi.org/10.1007/s43441-021-00344-2">doi:10.1007/s43441-021-00344-2</a>.<a href="#fnref24" class="footnote-back">↩︎</a></p></li>
+<li id="fn25"><p>For Satterthwaite only available in Phoenix WinNonlin,
+SPSS, and Stata; as an option in SAS by <code>SCORING=1</code>. For
+Kenward-Roger default option <code>EIM</code> in Stata. The
+<em>observed</em> information matrix is the only available in JMP and
+default <code>SCORING=0</code> in SAS; option <code>OIM</code> in
+Stata.<a href="#fnref25" class="footnote-back">↩︎</a></p></li>
+<li id="fn26"><p>Wonnemann M, Frömke C, Koch A. <em>Inflation of the
+Type I Error: Investigations on Regulatory Recom­mendations for
+Bioequivalence of Highly Variable Drugs.</em> Pharm Res. 2015; 32(1):
+135–43. <a href="https://doi.org/10.1007/s11095-014-1450-z">doi:10.1007/s11095-014-1450-z</a>.<a href="#fnref26" class="footnote-back">↩︎</a></p></li>
+<li id="fn27"><p>Muñoz J, Alcaide D, Ocaña J. <em>Consumer’s risk in the
+EMA and FDA regulatory approaches for bioequivalence in highly variable
+drugs.</em> Stat Med. 2016; 35(12): 1933–43. <a href="https://doi.org/10.1002/sim.6834">doi:10.1002/sim.6834</a>.<a href="#fnref27" class="footnote-back">↩︎</a></p></li>
+<li id="fn28"><p>Labes D, Schütz H. <em>Inflation of Type I Error in the
+Evaluation of Scaled Average Bioequivalence, and a Method for its
+Control.</em> Pharm Res. 2016; 33(11): 2805–14. <a href="https://doi.org/10.1007/s11095-016-2006-1">doi:10.1007/s11095-016-2006-1</a>.<a href="#fnref28" class="footnote-back">↩︎</a></p></li>
+<li id="fn29"><p>Molins E, Cobo E, Ocaña J. <em>Two-Stage Designs Versus
+European Scaled Average Designs in Bioequivalence Studies for Highly
+Variable Drugs: Which to Choose?</em> Stat Med. 2017: 36(30); 4777–88.
+<a href="https://doi.org/10.1002/sim.7452">doi:10.1002/sim.7452</a>.<a href="#fnref29" class="footnote-back">↩︎</a></p></li>
+<li id="fn30"><p>World Health Organization. <a href="https://extranet.who.int/pqweb/sites/default/files/documents/AUC_criteria_November2018.pdf"><em>Application
+of reference-scaled criteria for AUC in bioequivalence studies conducted
+for submission to PQTm.</em></a> Geneva. 22 November 2018.<a href="#fnref30" class="footnote-back">↩︎</a></p></li>
+<li id="fn31"><p>U.S. Food and Drug Administration, Center for Drug
+Evaluation and Research. <a href="https://www.fda.gov/media/87219/Download"><em>Draft Guidance for
+Industry. Bioequivalence Studies with Pharmacokinetic Endpoints for
+Drugs Submitted Under an ANDA.</em></a> August 2021.<a href="#fnref31" class="footnote-back">↩︎</a></p></li>
+<li id="fn32"><p>World Health Organization. <a href="https://extranet.who.int/pqweb/sites/default/files/documents/AUC_criteria_July2021.pdf"><em>Application
+of reference-scaled criteria for AUC in bioequivalence studies conducted
+for submission to PQT/MED.</em></a> Geneva. 02 July 2021.<a href="#fnref32" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 

@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
 
 ## ----expl1--------------------------------------------------------------------
 # Estimate sample sizes of full replicate designs (theta0 0.90,
-# target power 0.80) and CI of the CV with library PowerTOST
+# target power 0.80) and CI of the CV with package PowerTOST
 CV     <- 0.30
 design <- c("2x2x4", "2x2x3") # 4- and 3-period full replicate designs
 res    <- data.frame(design = rep(design, 2), n = c(rep(NA, 2), rep(12, 2)),
@@ -67,7 +67,7 @@ library(replicateBE) # attach the library to run example scripts
 method.A(data = rds01, print = FALSE, verbose=TRUE)
 
 ## ----expl2--------------------------------------------------------------------
-# Calculate limits with library PowerTOST
+# Calculate limits with package PowerTOST
 CV <- c(30, 50, 57.382)
 df <- data.frame(CV = CV,
                  reg1 = "EMA", L1 = NA, U1 = NA, cap1 = "",
@@ -126,7 +126,7 @@ df <- rbind(A[cs], B1[cs], B2[cs], B3[cs])
 names(df)[c(1, 3:6, 11)] <- c("Meth.", "L(%)", "U(%)",
                               "CL.lo(%)", "CL.hi(%)", "hw")
 df[, c(2, 11)] <- signif(df[, c(2, 11)], 5)
-print(df[order(df$hw, df$BE,decreasing = c(FALSE, TRUE),
+print(df[order(df$hw, df$BE, decreasing = c(FALSE, TRUE),
                method = "radix"), ], row.names = FALSE)
 
 ## ----expl5--------------------------------------------------------------------
